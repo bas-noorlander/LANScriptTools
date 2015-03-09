@@ -38,11 +38,12 @@ public class ScriptToolsThread implements Runnable {
 	public static Dock dock;
 	public static boolean quitting = false;
 	public static boolean doDock = true;
+	public static Object LOCK = new Object();
 
-	// Tool stuff
+	// inspect tool
 	public static RSTile selectedTile;
 
-	// 
+	// paths tool
 	public static boolean doGeneratePath = false;
 	public static ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
 
@@ -85,7 +86,7 @@ public class ScriptToolsThread implements Runnable {
 		}
 
 		// and lets try to attach to tribot now
-		if (tribotFrame != null) {
+		if (tribotFrame != null && dock != null) {
 			// set the Dock to the current tribot position/size
 			Dimension dim = tribotFrame.getSize();
 			dock.setPosition(tribotFrame.getLocation(), (int) dim.getWidth());
@@ -133,19 +134,28 @@ public class ScriptToolsThread implements Runnable {
 		switch (dock.getOpenTab()) {
 
 		case INSPECT_TOOL:
-			tilesToDraw.remove(previousTile);
+			
+			synchronized(LOCK) {
+				tilesToDraw.remove(previousTile);
+				tilesToDraw.add(selectedTile);
+			}
+			
 			InspectTool.refresh(tile);
-			tilesToDraw.add(selectedTile);
 			break;
 		case PATHS:
+			
 			if (doGeneratePath) {
 				
 				if (generatedPath.contains(tile)) { // if we already had the tile selected, remove it instead.
 					generatedPath.remove(tile);
-					tilesToDraw.remove(tile);
+					synchronized(LOCK) {
+						tilesToDraw.remove(tile);
+					}
 				} else {
 					generatedPath.add(tile);
-					tilesToDraw.add(tile);
+					synchronized(LOCK) {
+						tilesToDraw.add(tile);
+					}
 				}
 				PathsTool.refreshPathSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
 			}
