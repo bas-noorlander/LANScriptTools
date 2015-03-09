@@ -46,6 +46,8 @@ import org.tribot.api2007.types.RSObjectDefinition;
 import org.tribot.api2007.types.RSPlayer;
 import org.tribot.api2007.types.RSTile;
 
+import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LanAPI.NPCs;
 import scripts.LanAPI.Objects;
 import scripts.LanAPI.Players;
@@ -254,7 +256,7 @@ public class Dock extends JFrame {
 		btnPublic.setText("Public");
 		btnPublic.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				btnAccessModifierActionPerformed(evt);
+				PathsTool.btnAccessModifierActionPerformed(evt);
 			}
 		});
 
@@ -262,7 +264,7 @@ public class Dock extends JFrame {
 		btnPrivate.setText("Private");
 		btnPrivate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				btnAccessModifierActionPerformed(evt);
+				PathsTool.btnAccessModifierActionPerformed(evt);
 			}
 		});
 
@@ -272,13 +274,13 @@ public class Dock extends JFrame {
 		inputPathName.setText("pathName");
 		inputPathName.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
-				refreshFirstLine();
+				PathsTool.refreshFirstLine();
 			}
 			public void removeUpdate(DocumentEvent e) {
-				refreshFirstLine();
+				PathsTool.refreshFirstLine();
 			}
 			public void insertUpdate(DocumentEvent e) {
-				refreshFirstLine();
+				PathsTool.refreshFirstLine();
 			}
 		});
 
@@ -289,7 +291,7 @@ public class Dock extends JFrame {
 		btnCopyPaths.setMargin(new Insets(0, 0, 0, 0));
 		btnCopyPaths.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				btnCopyPathsActionPerformed(evt);
+				PathsTool.btnCopyPathsActionPerformed(evt);
 			}
 		});
 
@@ -298,7 +300,7 @@ public class Dock extends JFrame {
 		btnPathsStartStop.setMargin(new Insets(0, 0, 0, 0));
 		btnPathsStartStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				btnPathsStartStopActionPerformed(evt);
+				PathsTool.btnPathsStartStopActionPerformed(evt);
 			}
 		});
 
@@ -307,7 +309,7 @@ public class Dock extends JFrame {
 		btnClear.setMargin(new Insets(0, 0, 0, 0));
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				btnClearActionPerformed(evt);
+				PathsTool.btnClearActionPerformed(evt);
 			}
 		});
 
@@ -687,50 +689,11 @@ public class Dock extends JFrame {
 		pack();
 	}
 
-	/**
-	 * Fired when the 'public' or 'private' radiobutton is clicked in the PATHS tool
-	 */
-	protected void btnAccessModifierActionPerformed(ActionEvent evt) {
-		refreshFirstLine();
-	}
-
-	/**
-	 * Fired when the Copy to Clipboard button in the PATHS tool is clicked
-	 */
-	protected void btnCopyPathsActionPerformed(ActionEvent evt) {
-		StringSelection stringSelection = new StringSelection(outputPath.getText());
-		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
-		clpbrd.setContents(stringSelection, null);
-		General.println("Path copied to clipboard.");
-	}
-
-	/**
-	 * Fired when the clear button in the PATHS tool is clicked
-	 */
-	protected void btnClearActionPerformed(ActionEvent evt) {
-		ScriptToolsThread.generatedPath.clear();
-		refreshPathSnippet(null);
-	}
-
-	/**
-	 * Fired when the start/stop button in the PATHS tool is clicked
-	 */
-	protected void btnPathsStartStopActionPerformed(ActionEvent evt) {
-
-		if (ScriptToolsThread.doGeneratePath) {
-			ScriptToolsThread.doGeneratePath = false;
-			btnPathsStartStop.setText("Start");
-		} else {
-			ScriptToolsThread.doGeneratePath = true;
-			btnPathsStartStop.setText("Stop");
-		}
-	}
-
 	protected void onChangeTab(TABS tabs) {
 
 		switch(tabs) {
 		case INSPECT_TOOL:
-			refreshInspectTool(ScriptToolsThread.selectedTile);
+			InspectTool.refresh(ScriptToolsThread.selectedTile);
 			break;
 		case PATHS:
 			// just clear the selected tile
@@ -742,120 +705,7 @@ public class Dock extends JFrame {
 		}
 	}
 	
-	public void refreshFirstLine() {
-		StringBuilder sb = new StringBuilder(outputPath.getText());
-		
-		int removeIndex = 0;
-		
-		// clear first line (if any)
-		try (BufferedReader rd = new BufferedReader(new StringReader(outputPath.getText()))) {
-			removeIndex = rd.readLine().length();
-		} catch (IOException e) {}
-		
-		sb.delete(0, removeIndex);
-		
-		sb.insert(0, (btnPublic.isSelected() ? "public": "private") + " static final RSTile[] "+inputPathName.getText()+" = new RSTile[] {");
-		outputPath.setText(sb.toString());
-	}
-
-	public void refreshPathSnippet(RSTile[] path) {
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(btnPublic.isSelected() ? "public": "private");
-		sb.append(" static final RSTile[] ");
-		sb.append(inputPathName.getText());
-		sb.append(" = new RSTile[] {");
-
-		sb.append(System.getProperty("line.separator"));
-		
-		// If there are 6 or more tiles in the path, it is nicer to write 2 tiles per line.
-		if (path != null && path.length > 5) {
-
-			boolean first = true;
-			for (int i = 0; i < path.length; i++) {
-
-				if (first) 
-					sb.append("    "); // newline whitespace
-
-				sb.append("new RSTile("+path[i].getX()+", "+path[i].getY()+", "+path[i].getPlane()+")");
-
-				if (i+1 != path.length)
-					sb.append(", ");
-
-				if (!first || i+1 == path.length)
-					sb.append(System.getProperty("line.separator"));
-
-				first = !first;
-			}
-		} else if (path != null) {
-			for (int i = 0; i < path.length; i++) {
-
-				sb.append("    new RSTile("+path[i].getX()+", "+path[i].getY()+", "+path[i].getPlane()+")");
-
-				if (i+1 != path.length)
-					sb.append(",");
-
-				sb.append(System.getProperty("line.separator"));
-
-			}
-		}
-		sb.append("};");
-
-		outputPath.setText(sb.toString());
-	}
-
-	private String arrayToSingle(String[] array) {
-		StringBuilder builder = new StringBuilder();
-		for(int i = 0; i < array.length; i++) {
-			if (i == array.length-1)// last one
-				builder.append(array[i]);
-			else
-				builder.append(array[i]+", ");
-		}
-		return builder.toString();
-	}
-
-	public void refreshInspectTool(RSTile tile) {
-		if (tile!= null) {
-
-			// We basically want everything that's happening on this tile.
-			DefaultTableModel model = (DefaultTableModel)tableInspect.getModel();
-			model.setNumRows(0);
-
-			// Find all npcs on tile.
-			RSNPC[] npcs = NPCs.getAt(tile);
-			for (RSNPC npc : npcs) {
-				model.addRow(new Object[] {npc.getID(), "NPC", npc.getName(), arrayToSingle(npc.getActions()) });
-			}
-
-			// Find the object on tile.
-			RSObject obj = Objects.getAt(tile);
-			if (obj != null) {
-				RSObjectDefinition objDef = obj.getDefinition();
-				// There are a bazillion 'null' objects ingame. So lets filter those out.
-				if (objDef != null && !objDef.getName().equals("null")) {
-					String name = objDef != null ? objDef.getName() : "";
-					String actions = objDef != null ? arrayToSingle(objDef.getActions()) : "";
-					model.addRow(new Object[] { obj.getID(), "Object", name, actions });
-				}
-			}
-
-			// Find all grounditems on tile.
-			RSGroundItem[] items = GroundItems.getAt(tile);
-			for (RSGroundItem item : items) {
-				RSItemDefinition itemDef = item.getDefinition();
-				String name = itemDef != null ? itemDef.getName() : "";
-				model.addRow(new Object[] {item.getID(), "Item", name, "Take" });
-			}
-
-			// And all other players
-			RSPlayer[] players = Players.findNear(tile);
-			for (RSPlayer player : players) {
-				model.addRow(new Object[] {null , "Player", player.getName(), "" });
-			}
-		}
-	}
+	
 
 	private JButton btnClear;
 	private JButton btnCopyPathFinding;
@@ -863,10 +713,10 @@ public class Dock extends JFrame {
 	private JRadioButton btnDPathNavigator;
 	private JRadioButton btnPathFinding;
 	private JRadioButton btnPrivate;
-	private JRadioButton btnPublic;
+	public JRadioButton btnPublic;
 	private ButtonGroup btngroupPaths;
 	private JButton btnSettingsStopStart;
-	private JButton btnPathsStartStop;
+	public JButton btnPathsStartStop;
 	private JButton btnUpdateNPCs;
 	private JButton btnUpdateObjects;
 	private JRadioButton btnWalkingMinimap;
@@ -874,7 +724,7 @@ public class Dock extends JFrame {
 	private JCheckBox chkDock;
 	private JCheckBox chkUpdateNPCs;
 	private JCheckBox chkUpdateObjects;
-	private JTextField inputPathName;
+	public JTextField inputPathName;
 	private JTextField inputSearchSetting;
 	private JLabel jLabel34;
 	private JLabel jLabel35;
@@ -902,7 +752,7 @@ public class Dock extends JFrame {
 	private JLabel lanapiHelp;
 	private JList listSettingsLog;
 	private JTextArea outputInspect;
-	private JTextArea outputPath;
+	public JTextArea outputPath;
 	private JTextArea outputPathFinding;
 	private Panel panel1;
 	private Panel panel2;
@@ -910,7 +760,7 @@ public class Dock extends JFrame {
 	private Panel panel4;
 	private Panel panel5;
 	private Panel panel6;
-	private JTable tableInspect;
+	public JTable tableInspect;
 	private JTable tableNPCs;
 	private JTable tableObjects;
 	private JTable tableSettings;

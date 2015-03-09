@@ -13,9 +13,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+
 import org.tribot.api.General;
 import org.tribot.api.Screen;
 import org.tribot.api2007.types.RSTile;
+
+import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LanAPI.Projecting;
 import scripts.LanAPI.Constants.Triplet;
 
@@ -130,7 +134,7 @@ public class ScriptToolsThread implements Runnable {
 
 		case INSPECT_TOOL:
 			tilesToDraw.remove(previousTile);
-			dock.refreshInspectTool(tile);
+			InspectTool.refresh(tile);
 			tilesToDraw.add(selectedTile);
 			break;
 		case PATHS:
@@ -143,7 +147,7 @@ public class ScriptToolsThread implements Runnable {
 					generatedPath.add(tile);
 					tilesToDraw.add(tile);
 				}
-				dock.refreshPathSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
+				PathsTool.refreshPathSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
 			}
 			break;
 		default:
