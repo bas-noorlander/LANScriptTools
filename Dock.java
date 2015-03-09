@@ -6,9 +6,16 @@ import java.awt.Insets;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 
+import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -25,7 +32,11 @@ import javax.swing.LayoutStyle;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+
+import org.tribot.api.General;
 import org.tribot.api2007.GroundItems;
 import org.tribot.api2007.types.RSGroundItem;
 import org.tribot.api2007.types.RSItemDefinition;
@@ -49,6 +60,7 @@ public class Dock extends JFrame {
 	private static final long serialVersionUID = -1416786796525087646L;
 
 	public Dock() {
+
 		createGUI();
 
 		// Listen to close events on the dock.
@@ -100,7 +112,7 @@ public class Dock extends JFrame {
 		inputPathName = new JTextField();
 		jLabel37 = new JLabel();
 		btnCopyPaths = new JButton();
-		btnStartStop = new JButton();
+		btnPathsStartStop = new JButton();
 		btnClear = new JButton();
 		panel2 = new Panel();
 		jLabel35 = new JLabel();
@@ -135,6 +147,7 @@ public class Dock extends JFrame {
 		jScrollPane6 = new JScrollPane();
 		listSettingsLog = new JList();
 		chkDock = new JCheckBox();
+		btngroupPaths = new ButtonGroup();
 
 		setTitle("[LAN] ScriptTools");
 		setResizable(false);
@@ -233,17 +246,41 @@ public class Dock extends JFrame {
 		outputPath.setColumns(20);
 		outputPath.setRows(5);
 		outputPath.setTabSize(4);
-		outputPath.setText("private static final RSTile[] pathName = new RSTile[] {\n    new RSTile(0, 0, 0),\n};");
+		outputPath.setText("private static final RSTile[] pathName = new RSTile[] {\n};");
 		jScrollPane1.setViewportView(outputPath);
 
 		jLabel38.setText("Path name:");
 
 		btnPublic.setText("Public");
+		btnPublic.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				btnAccessModifierActionPerformed(evt);
+			}
+		});
 
 		btnPrivate.setSelected(true);
 		btnPrivate.setText("Private");
+		btnPrivate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				btnAccessModifierActionPerformed(evt);
+			}
+		});
+
+		btngroupPaths.add(btnPublic);
+		btngroupPaths.add(btnPrivate);
 
 		inputPathName.setText("pathName");
+		inputPathName.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				refreshFirstLine();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				refreshFirstLine();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				refreshFirstLine();
+			}
+		});
 
 		jLabel37.setText("Clicking the tile again will remove it from the path.");
 
@@ -252,16 +289,16 @@ public class Dock extends JFrame {
 		btnCopyPaths.setMargin(new Insets(0, 0, 0, 0));
 		btnCopyPaths.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				//  btnCopyPathsActionPerformed(evt);
+				btnCopyPathsActionPerformed(evt);
 			}
 		});
 
-		btnStartStop.setText("Start");
-		btnStartStop.setInheritsPopupMenu(true);
-		btnStartStop.setMargin(new Insets(0, 0, 0, 0));
-		btnStartStop.addActionListener(new ActionListener() {
+		btnPathsStartStop.setText("Start");
+		btnPathsStartStop.setInheritsPopupMenu(true);
+		btnPathsStartStop.setMargin(new Insets(0, 0, 0, 0));
+		btnPathsStartStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				//  btnStartStopActionPerformed(evt);
+				btnPathsStartStopActionPerformed(evt);
 			}
 		});
 
@@ -270,7 +307,7 @@ public class Dock extends JFrame {
 		btnClear.setMargin(new Insets(0, 0, 0, 0));
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				//   btnClearActionPerformed(evt);
+				btnClearActionPerformed(evt);
 			}
 		});
 
@@ -290,7 +327,7 @@ public class Dock extends JFrame {
 														.addGap(352, 352, 352))
 														.addGroup(GroupLayout.Alignment.LEADING, panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
 																.addGroup(panel1Layout.createSequentialGroup()
-																		.addComponent(btnStartStop, GroupLayout.PREFERRED_SIZE, 136, GroupLayout.PREFERRED_SIZE)
+																		.addComponent(btnPathsStartStop, GroupLayout.PREFERRED_SIZE, 136, GroupLayout.PREFERRED_SIZE)
 																		.addGap(325, 325, 325)
 																		.addComponent(btnCopyPaths, GroupLayout.PREFERRED_SIZE, 136, GroupLayout.PREFERRED_SIZE))
 																		.addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
@@ -328,7 +365,7 @@ public class Dock extends JFrame {
 								.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
 								.addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
 										.addComponent(btnCopyPaths, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-										.addComponent(btnStartStop, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
+										.addComponent(btnPathsStartStop, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
 										.addContainerGap())
 				);
 
@@ -650,17 +687,124 @@ public class Dock extends JFrame {
 		pack();
 	}
 
+	/**
+	 * Fired when the 'public' or 'private' radiobutton is clicked in the PATHS tool
+	 */
+	protected void btnAccessModifierActionPerformed(ActionEvent evt) {
+		refreshFirstLine();
+	}
+
+	/**
+	 * Fired when the Copy to Clipboard button in the PATHS tool is clicked
+	 */
+	protected void btnCopyPathsActionPerformed(ActionEvent evt) {
+		StringSelection stringSelection = new StringSelection(outputPath.getText());
+		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clpbrd.setContents(stringSelection, null);
+		General.println("Path copied to clipboard.");
+	}
+
+	/**
+	 * Fired when the clear button in the PATHS tool is clicked
+	 */
+	protected void btnClearActionPerformed(ActionEvent evt) {
+		ScriptToolsThread.generatedPath.clear();
+		refreshPathSnippet(null);
+	}
+
+	/**
+	 * Fired when the start/stop button in the PATHS tool is clicked
+	 */
+	protected void btnPathsStartStopActionPerformed(ActionEvent evt) {
+
+		if (ScriptToolsThread.doGeneratePath) {
+			ScriptToolsThread.doGeneratePath = false;
+			btnPathsStartStop.setText("Start");
+		} else {
+			ScriptToolsThread.doGeneratePath = true;
+			btnPathsStartStop.setText("Stop");
+		}
+	}
+
 	protected void onChangeTab(TABS tabs) {
 
 		switch(tabs) {
-			case INSPECT_TOOL: //inspect tool 
-				refreshInspectTool(ScriptToolsThread.selectedTile);
-				break;
-			default:
-				break;
+		case INSPECT_TOOL:
+			refreshInspectTool(ScriptToolsThread.selectedTile);
+			break;
+		case PATHS:
+			// just clear the selected tile
+			ScriptToolsThread.tilesToDraw.remove(ScriptToolsThread.selectedTile);
+			ScriptToolsThread.selectedTile = null;
+			break;
+		default:
+			break;
 		}
 	}
 	
+	public void refreshFirstLine() {
+		StringBuilder sb = new StringBuilder(outputPath.getText());
+		
+		int removeIndex = 0;
+		
+		// clear first line (if any)
+		try (BufferedReader rd = new BufferedReader(new StringReader(outputPath.getText()))) {
+			removeIndex = rd.readLine().length();
+		} catch (IOException e) {}
+		
+		sb.delete(0, removeIndex);
+		
+		sb.insert(0, (btnPublic.isSelected() ? "public": "private") + " static final RSTile[] "+inputPathName.getText()+" = new RSTile[] {");
+		outputPath.setText(sb.toString());
+	}
+
+	public void refreshPathSnippet(RSTile[] path) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(btnPublic.isSelected() ? "public": "private");
+		sb.append(" static final RSTile[] ");
+		sb.append(inputPathName.getText());
+		sb.append(" = new RSTile[] {");
+
+		sb.append(System.getProperty("line.separator"));
+		
+		// If there are 6 or more tiles in the path, it is nicer to write 2 tiles per line.
+		if (path != null && path.length > 5) {
+
+			boolean first = true;
+			for (int i = 0; i < path.length; i++) {
+
+				if (first) 
+					sb.append("    "); // newline whitespace
+
+				sb.append("new RSTile("+path[i].getX()+", "+path[i].getY()+", "+path[i].getPlane()+")");
+
+				if (i+1 != path.length)
+					sb.append(", ");
+
+				if (!first || i+1 == path.length)
+					sb.append(System.getProperty("line.separator"));
+
+				first = !first;
+			}
+		} else if (path != null) {
+			for (int i = 0; i < path.length; i++) {
+
+				sb.append("    new RSTile("+path[i].getX()+", "+path[i].getY()+", "+path[i].getPlane()+")");
+
+				if (i+1 != path.length)
+					sb.append(",");
+
+				sb.append(System.getProperty("line.separator"));
+
+			}
+		}
+		sb.append("};");
+
+		outputPath.setText(sb.toString());
+	}
+
 	private String arrayToSingle(String[] array) {
 		StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < array.length; i++) {
@@ -674,17 +818,17 @@ public class Dock extends JFrame {
 
 	public void refreshInspectTool(RSTile tile) {
 		if (tile!= null) {
-			
+
 			// We basically want everything that's happening on this tile.
 			DefaultTableModel model = (DefaultTableModel)tableInspect.getModel();
 			model.setNumRows(0);
-			
+
 			// Find all npcs on tile.
 			RSNPC[] npcs = NPCs.getAt(tile);
 			for (RSNPC npc : npcs) {
 				model.addRow(new Object[] {npc.getID(), "NPC", npc.getName(), arrayToSingle(npc.getActions()) });
 			}
-			
+
 			// Find the object on tile.
 			RSObject obj = Objects.getAt(tile);
 			if (obj != null) {
@@ -696,7 +840,7 @@ public class Dock extends JFrame {
 					model.addRow(new Object[] { obj.getID(), "Object", name, actions });
 				}
 			}
-			
+
 			// Find all grounditems on tile.
 			RSGroundItem[] items = GroundItems.getAt(tile);
 			for (RSGroundItem item : items) {
@@ -704,7 +848,7 @@ public class Dock extends JFrame {
 				String name = itemDef != null ? itemDef.getName() : "";
 				model.addRow(new Object[] {item.getID(), "Item", name, "Take" });
 			}
-			
+
 			// And all other players
 			RSPlayer[] players = Players.findNear(tile);
 			for (RSPlayer player : players) {
@@ -720,8 +864,9 @@ public class Dock extends JFrame {
 	private JRadioButton btnPathFinding;
 	private JRadioButton btnPrivate;
 	private JRadioButton btnPublic;
+	private ButtonGroup btngroupPaths;
 	private JButton btnSettingsStopStart;
-	private JButton btnStartStop;
+	private JButton btnPathsStartStop;
 	private JButton btnUpdateNPCs;
 	private JButton btnUpdateObjects;
 	private JRadioButton btnWalkingMinimap;

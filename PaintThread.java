@@ -47,6 +47,7 @@ public class PaintThread implements Runnable {
 			}
 
 			for (RSTile tile : ScriptToolsThread.tilesToDraw) {
+				
 				if (tile == null || !tile.isOnScreen())
 					continue;
 				

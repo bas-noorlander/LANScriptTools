@@ -38,6 +38,10 @@ public class Listeners {
 	}
 }
 
+/**
+ * A MouseAdapter which will allow us to hook mouse events.
+ * We do this since Tribot doesn't relay mouse events when there isn't an 'active' script running.
+ */
 class CursorListener extends MouseAdapter {
 
 	public void mousePressed(MouseEvent e) {

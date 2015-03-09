@@ -22,10 +22,9 @@ public class LANScriptTools extends Script implements Painting {
 	@Override
 	public void run() {
 
-		// We pass a reference to the script thread to see if/when it closes properly.
 		final Thread scriptThread = Thread.currentThread();
 
-		// However, we also want to keep the ability to paint on the screen, so we pass the graphics object allong to the new thread.
+		// We also want to keep the ability to paint on the screen, so we pass the graphics object to the new thread.
 		while (g == null)
 			General.sleep(100);
 

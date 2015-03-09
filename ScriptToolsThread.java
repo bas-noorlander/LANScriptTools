@@ -27,19 +27,27 @@ import scripts.LanAPI.Constants.Triplet;
  */
 public class ScriptToolsThread implements Runnable {
 
+	// Dock/misc stuff
 	private final Thread scriptThread;
 	private Frame tribotFrame;
 	private Component applet;
 	public static Dock dock;
 	public static boolean quitting = false;
 	public static boolean doDock = true;
-	
+
+	// Tool stuff
 	public static RSTile selectedTile;
 
+	// 
+	public static boolean doGeneratePath = false;
+	public static ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
+
+	// Paint stuff
 	public static ArrayList<Triplet<Polygon, Color, Boolean>> shapesToDraw = new ArrayList<Triplet<Polygon, Color, Boolean>>();
 	public static ArrayList<RSTile> tilesToDraw = new ArrayList<RSTile>();
 
 	public ScriptToolsThread(Thread scriptThread, Graphics g) {
+
 		this.scriptThread = scriptThread;
 
 		// Since the original paint thread died, create a new one.
@@ -57,9 +65,8 @@ public class ScriptToolsThread implements Runnable {
 		// Sorry! you forgot the JFrame class!
 		Frame[] frames = JFrame.getFrames();
 		for (Frame frame : frames) {
-			if (frame.getTitle().contains("TRiBot Old-School")) {
-				tribotFrame = frame;
-			}
+			if (frame.getTitle().contains("TRiBot Old-School")) 
+				tribotFrame = frame;	
 		}
 
 		// Boot up our GUI
@@ -84,7 +91,7 @@ public class ScriptToolsThread implements Runnable {
 
 			// Listen to move events on the tribot frame
 			tribotFrame.addComponentListener(Listeners.getMoveListener());
-			
+
 			// Tribot's mouse interfaces only work when a script is running.
 			// So we have to hook the mouse to the applet the old fashioned way.
 			applet = tribotFrame.findComponentAt(new Point((int)Screen.getViewport().getCenterX(), (int)Screen.getViewport().getCenterY()));
@@ -109,26 +116,42 @@ public class ScriptToolsThread implements Runnable {
 
 		General.println("[LAN] ScriptTools closed.");
 	}
-	
+
 	public static void setSelectedTile(RSTile tile) {
+		
 		if (tile == null)
 			return;
-		
-		tilesToDraw.remove(selectedTile); // remove old selected tile from paint
+
+		 // remove old selected tile from paint
+		RSTile previousTile = selectedTile;
 		selectedTile = tile;
-		tilesToDraw.add(selectedTile);
 		
 		switch (dock.getOpenTab()) {
-		
-			case INSPECT_TOOL:
-				dock.refreshInspectTool(tile);
-				break;
+
+		case INSPECT_TOOL:
+			tilesToDraw.remove(previousTile);
+			dock.refreshInspectTool(tile);
+			tilesToDraw.add(selectedTile);
+			break;
+		case PATHS:
+			if (doGeneratePath) {
+				
+				if (generatedPath.contains(tile)) { // if we already had the tile selected, remove it instead.
+					generatedPath.remove(tile);
+					tilesToDraw.remove(tile);
+				} else {
+					generatedPath.add(tile);
+					tilesToDraw.add(tile);
+				}
+				dock.refreshPathSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
+			}
+			break;
 		default:
 			break;
-			
+
 		}
 	}
-	
+
 	public static void onTileClick(Point point) {
 		RSTile clickTile = Projecting.getTileAtPoint(point);
 		if (clickTile != null)
