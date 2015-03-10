@@ -41,8 +41,7 @@ public class InspectTool {
 	public static void refresh(RSTile tile) {
 
 		if (tile!= null) {
-
-			// We basically want everything that's happening on this tile.
+			
 			DefaultTableModel model = (DefaultTableModel)ScriptToolsThread.dock.tableInspect.getModel();
 			model.setNumRows(0);
 

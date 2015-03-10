@@ -2,14 +2,14 @@ package scripts.LANScriptTools;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
 
 import org.tribot.api.General;
 import org.tribot.api2007.Projection;
+import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
-
-import scripts.LanAPI.Constants.Triplet;
 
 /**
  * @author Laniax
@@ -37,18 +37,23 @@ public class PaintThread implements Runnable {
 
 			synchronized(ScriptToolsThread.LOCK) {
 				
-				for (Triplet<Polygon, Color, Boolean> shape : ScriptToolsThread.shapesToDraw) {
-
-					g.setColor(shape.getB());
-					g.fillPolygon(shape.getA());
-
-					if (shape.getC()) {
-						g.setColor(shape.getB().darker());
-						g.drawPolygon(shape.getA());
+				for (RSModel obj : ScriptToolsThread.entitiesToDraw) {
+					
+					if (obj.getVisiblePoints().length > 0) {
+						
+						for (Polygon triangle : obj.getTriangles()) {
+							g.setColor(blackTransparent);
+							g.fillPolygon(triangle);
+							
+							g.setColor(cyanSlightTransparent);
+							g.drawPolygon(triangle);
+						}
 					}
 				}
 
-				for (RSTile tile : ScriptToolsThread.tilesToDraw) {
+				for (int i = 0; i < ScriptToolsThread.tilesToDraw.size(); i++) {
+					
+					RSTile tile = ScriptToolsThread.tilesToDraw.get(i);
 
 					if (tile == null || !tile.isOnScreen())
 						continue;
@@ -58,6 +63,15 @@ public class PaintThread implements Runnable {
 					g.fillPolygon(tilePoly);
 					g.setColor(cyanSlightTransparent);
 					g.drawPolygon(tilePoly);
+					
+					if (ScriptToolsThread.dock.getOpenTab() == TABS.PATHS) {
+						// Draw a line between all tiles in the path tool.
+						if (i > 0) {
+							Point curTile = Projection.tileToScreen(tile, 0);
+							Point prevTile = Projection.tileToScreen(ScriptToolsThread.tilesToDraw.get(i-1), 0);
+							g.drawLine(curTile.x, curTile.y, prevTile.x, prevTile.y);
+						}
+					}
 				}
 			}
 

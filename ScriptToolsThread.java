@@ -1,6 +1,5 @@
 package scripts.LANScriptTools;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -8,20 +7,22 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Polygon;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 
 import org.tribot.api.General;
 import org.tribot.api.Screen;
+import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LanAPI.Projecting;
-import scripts.LanAPI.Constants.Triplet;
 
 /**
  * The thread that keeps running even after the script stops.
@@ -40,15 +41,14 @@ public class ScriptToolsThread implements Runnable {
 	public static boolean doDock = true;
 	public static Object LOCK = new Object();
 
-	// inspect tool
+	// Tool stuff
 	public static RSTile selectedTile;
-
-	// paths tool
 	public static boolean doGeneratePath = false;
 	public static ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
+	public static Timer updateTimer = new Timer();
 
 	// Paint stuff
-	public static ArrayList<Triplet<Polygon, Color, Boolean>> shapesToDraw = new ArrayList<Triplet<Polygon, Color, Boolean>>();
+	public static ArrayList<RSModel> entitiesToDraw = new ArrayList<RSModel>();
 	public static ArrayList<RSTile> tilesToDraw = new ArrayList<RSTile>();
 
 	public ScriptToolsThread(Thread scriptThread, Graphics g) {
@@ -56,7 +56,7 @@ public class ScriptToolsThread implements Runnable {
 		this.scriptThread = scriptThread;
 
 		// Since the original paint thread died, create a new one.
-		new Thread(new PaintThread((Graphics2D)g)).start();;
+		new Thread(new PaintThread((Graphics2D)g)).start();
 	}
 
 	public void run() {
@@ -104,6 +104,15 @@ public class ScriptToolsThread implements Runnable {
 				applet.addMouseListener(Listeners.getMouseListener());
 			}
 		}
+		
+		updateTimer.scheduleAtFixedRate(new TimerTask(){
+			public void run() {
+				if (ObjectsTool.doAutoUpdate && dock.getOpenTab() == TABS.OBJECTS) {
+					ObjectsTool.update();
+				}/* else if (NPCsTool.doAutoUpdate && dock.getOpenTab() == TABS.NPCS) {
+					
+				}*/
+			}}, 2000, 2000);
 
 		while(!quitting) {
 

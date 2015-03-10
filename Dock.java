@@ -6,14 +6,8 @@ import java.awt.Insets;
 import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -29,6 +23,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
+import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -36,21 +31,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.tribot.api.General;
-import org.tribot.api2007.GroundItems;
-import org.tribot.api2007.types.RSGroundItem;
-import org.tribot.api2007.types.RSItemDefinition;
-import org.tribot.api2007.types.RSNPC;
 import org.tribot.api2007.types.RSObject;
-import org.tribot.api2007.types.RSObjectDefinition;
-import org.tribot.api2007.types.RSPlayer;
 import org.tribot.api2007.types.RSTile;
 
+import scripts.LANScriptTools.Tools.ButtonEditor;
+import scripts.LANScriptTools.Tools.ButtonRenderer;
 import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.PathsTool;
-import scripts.LanAPI.NPCs;
-import scripts.LanAPI.Objects;
-import scripts.LanAPI.Players;
+import scripts.LANScriptTools.Tools.ObjectsTool;
 
 
 /**
@@ -375,34 +363,26 @@ public class Dock extends JFrame {
 
 		jLabel35.setText("This tab displays information about objects around you.");
 
-		tableObjects.setModel(new DefaultTableModel(
-				new Object [][] {
+		tableObjects.setModel(new ObjectTableModel(new RSObject[0]));
+		tableObjects.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tableObjects.getColumn("Projection").setCellRenderer(new ButtonRenderer());
+		tableObjects.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-				},
-				new String [] {
-						"Name", "ID", "Location", "Model Points", "Projection"
-				}
-				) {
-			Class[] types = new Class [] {
-					String.class, Integer.class, Object.class, Integer.class, Object.class
-			};
-			boolean[] canEdit = new boolean [] {
-					false, false, false, false, false
-			};
-
-			public Class getColumnClass(int columnIndex) {
-				return types [columnIndex];
-			}
-
-			public boolean isCellEditable(int rowIndex, int columnIndex) {
-				return canEdit [columnIndex];
-			}
-		});
 		jScrollPane2.setViewportView(tableObjects);
 
 		chkUpdateObjects.setText("Auto Update");
-
+		chkUpdateObjects.setSelected(true);
+		chkUpdateObjects.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				ObjectsTool.chkUpdateObjectsActionPerformed(evt);
+			}
+		});
 		btnUpdateObjects.setText("Update");
+		btnUpdateObjects.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				ObjectsTool.update();
+			}
+		});
 
 		GroupLayout panel2Layout = new GroupLayout(panel2);
 		panel2.setLayout(panel2Layout);
@@ -454,7 +434,7 @@ public class Dock extends JFrame {
 					String.class, Integer.class, Object.class, Integer.class, Object.class
 			};
 			boolean[] canEdit = new boolean [] {
-					false, false, false, true, false
+					false, false, false, false, false
 			};
 
 			public Class getColumnClass(int columnIndex) {
@@ -691,21 +671,35 @@ public class Dock extends JFrame {
 
 	protected void onChangeTab(TABS tabs) {
 
+		// We clear the hings to draw on each tab switch
+		ScriptToolsThread.tilesToDraw.clear();
+		ScriptToolsThread.entitiesToDraw.clear();
+		
+		// Don't auto update if the tab isnt open.
+		ObjectsTool.doAutoUpdate = false;
+		
 		switch(tabs) {
 		case INSPECT_TOOL:
+			// Draw the selected tile only.
+			ScriptToolsThread.tilesToDraw.add(ScriptToolsThread.selectedTile);
 			InspectTool.refresh(ScriptToolsThread.selectedTile);
 			break;
 		case PATHS:
-			// just clear the selected tile
-			ScriptToolsThread.tilesToDraw.remove(ScriptToolsThread.selectedTile);
+			// Draw the entire currently selected path
+			for (RSTile tile : ScriptToolsThread.generatedPath)
+				ScriptToolsThread.tilesToDraw.add(tile);
+
+			// And clear our selected tile
 			ScriptToolsThread.selectedTile = null;
+			break;
+		case OBJECTS:
+			ObjectsTool.doAutoUpdate = chkUpdateObjects.isSelected();
+			btnUpdateObjects.setEnabled(!chkUpdateObjects.isSelected());
 			break;
 		default:
 			break;
 		}
 	}
-	
-	
 
 	private JButton btnClear;
 	private JButton btnCopyPathFinding;
@@ -718,12 +712,12 @@ public class Dock extends JFrame {
 	private JButton btnSettingsStopStart;
 	public JButton btnPathsStartStop;
 	private JButton btnUpdateNPCs;
-	private JButton btnUpdateObjects;
+	public JButton btnUpdateObjects;
 	private JRadioButton btnWalkingMinimap;
 	private JRadioButton btnWalkingScreenPath;
 	private JCheckBox chkDock;
 	private JCheckBox chkUpdateNPCs;
-	private JCheckBox chkUpdateObjects;
+	public JCheckBox chkUpdateObjects;
 	public JTextField inputPathName;
 	private JTextField inputSearchSetting;
 	private JLabel jLabel34;
@@ -762,6 +756,6 @@ public class Dock extends JFrame {
 	private Panel panel6;
 	public JTable tableInspect;
 	private JTable tableNPCs;
-	private JTable tableObjects;
+	public JTable tableObjects;
 	private JTable tableSettings;
 }
