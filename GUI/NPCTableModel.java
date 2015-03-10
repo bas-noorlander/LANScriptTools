@@ -30,7 +30,8 @@ public class NPCTableModel extends AbstractTableModel{
 		npcList.clear();
 		
 		for (RSNPC npc : npcs) {
-			if (npc.getName() != null || Player.getPosition().distanceTo(npc) > 19)
+			String name = npc.getName();
+			if (name != null && !name.isEmpty() && Player.getPosition().distanceTo(npc) < 19)
 				npcList.add(npc);
 		}
 	}
