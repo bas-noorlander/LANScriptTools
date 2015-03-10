@@ -140,6 +140,7 @@ public class Dock extends JFrame {
 		listSettingsLog = new JList();
 		chkDock = new JCheckBox();
 		btngroupPaths = new ButtonGroup();
+		btngroupPathfinding = new ButtonGroup();
 
 		setTitle("[LAN] ScriptTools");
 		setResizable(false);
@@ -155,9 +156,9 @@ public class Dock extends JFrame {
 			}
 		});
 
-		jLabel41.setText("This is a multifunctional tool which will give you info on any tile you click on,");
+		jLabel41.setText("This is a multifunctional tool which will give you info on any tile you click on with your middle mouse button.");
 
-		jLabel42.setText("including any Objects, NPCs or Item who may reside on it (at the time of selection).");
+		jLabel42.setText("It includes any Objects, NPCs, Players or Item who may reside on it (at the time of selection).");
 
 		tableInspect.setModel(new DefaultTableModel(
 				new Object [][] {},
@@ -233,7 +234,7 @@ public class Dock extends JFrame {
 
 		jLabel34.setText("Here you can easily create paths to use in your script.");
 
-		jLabel36.setText("All you have to do is click the 'Start' button below and select tiles ingame by clicking both mouse buttons at the same time.");
+		jLabel36.setText("All you have to do is click the 'Start' button below and select tiles ingame by clicking the middle mouse button (scroll-wheel).");
 
 		outputPath.setColumns(20);
 		outputPath.setRows(5);
@@ -475,7 +476,7 @@ public class Dock extends JFrame {
 
 		jLabel43.setText("Here you can check how different pathfinding methods would walk to a tile.");
 
-		jLabel44.setText("Simply select a destination tile by clicking with both mouse buttons on the tile and select your pathfinding algorithm below.");
+		jLabel44.setText("Simply select a destination tile by clicking with the middle mouse button (scroll-wheel) on the tile and select your pathfinding algorithm below.");
 
 		btnDPathNavigator.setText("DPathNavigator");
 
@@ -489,6 +490,11 @@ public class Dock extends JFrame {
 		btnWalkingMinimap.setText("Walking Minimap");
 
 		btnWalkingScreenPath.setText("Walking Screen Path");
+		
+		btngroupPathfinding.add(btnDPathNavigator);
+		btngroupPathfinding.add(btnPathFinding);
+		btngroupPathfinding.add(btnWalkingMinimap);
+		btngroupPathfinding.add(btnWalkingScreenPath);
 
 		btnCopyPathFinding.setText("Copy to clipboard");
 		btnCopyPathFinding.setInheritsPopupMenu(true);
@@ -708,6 +714,7 @@ public class Dock extends JFrame {
 	private JRadioButton btnPrivate;
 	public JRadioButton btnPublic;
 	private ButtonGroup btngroupPaths;
+	public ButtonGroup btngroupPathfinding;
 	private JButton btnSettingsStopStart;
 	public JButton btnPathsStartStop;
 	public JButton btnUpdateNPCs;
