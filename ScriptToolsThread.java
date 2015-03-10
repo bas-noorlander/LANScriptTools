@@ -20,6 +20,7 @@ import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LanAPI.Projecting;
@@ -107,11 +108,11 @@ public class ScriptToolsThread implements Runnable {
 		
 		updateTimer.scheduleAtFixedRate(new TimerTask(){
 			public void run() {
-				if (ObjectsTool.doAutoUpdate && dock.getOpenTab() == TABS.OBJECTS) {
+				if (ObjectsTool.doAutoUpdate) {
 					ObjectsTool.update();
-				}/* else if (NPCsTool.doAutoUpdate && dock.getOpenTab() == TABS.NPCS) {
-					
-				}*/
+				} else if (NPCsTool.doAutoUpdate) {
+					NPCsTool.update();
+				}
 			}}, 2000, 2000);
 
 		while(!quitting) {

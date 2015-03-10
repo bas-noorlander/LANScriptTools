@@ -12,6 +12,7 @@ import javax.swing.JTable;
 
 import org.tribot.api2007.types.RSModel;
 
+import scripts.LANScriptTools.NPCTableModel;
 import scripts.LANScriptTools.ObjectTableModel;
 import scripts.LANScriptTools.ScriptToolsThread;
 
@@ -49,9 +50,14 @@ public class ButtonEditor extends DefaultCellEditor {
 			button.setBackground(table.getBackground());
 		}
 		
-		ObjectTableModel model = (ObjectTableModel)table.getModel();
-		if (model != null)
-			object = model.getObjectAt(row).getModel();
+		Object model = table.getModel();
+		if (model != null) {
+			if (model instanceof ObjectTableModel) {
+				object = ((ObjectTableModel)model).getObjectAt(row).getModel();
+			} else if (model instanceof NPCTableModel) {
+				object = ((NPCTableModel)model).getNPCAt(row).getModel();
+			}
+		}
 		
 		isPushed = true;
 		return button;

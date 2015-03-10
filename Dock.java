@@ -31,12 +31,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.tribot.api2007.types.RSNPC;
 import org.tribot.api2007.types.RSObject;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Tools.ButtonEditor;
 import scripts.LANScriptTools.Tools.ButtonRenderer;
 import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 
@@ -419,32 +421,24 @@ public class Dock extends JFrame {
 		jLabel39.setText("This tab displays information about npcs around you.");
 
 		chkUpdateNPCs.setText("Auto Update");
-
-		btnUpdateNPCs.setText("Update");
-
-		tableNPCs.setModel(new DefaultTableModel(
-				new Object [][] {
-
-				},
-				new String [] {
-						"Name", "ID", "Location", "Model Points", "Projection"
-				}
-				) {
-			Class[] types = new Class [] {
-					String.class, Integer.class, Object.class, Integer.class, Object.class
-			};
-			boolean[] canEdit = new boolean [] {
-					false, false, false, false, false
-			};
-
-			public Class getColumnClass(int columnIndex) {
-				return types [columnIndex];
-			}
-
-			public boolean isCellEditable(int rowIndex, int columnIndex) {
-				return canEdit [columnIndex];
+		chkUpdateNPCs.setSelected(true);
+		chkUpdateNPCs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				NPCsTool.chkUpdateNPCsActionPerformed(evt);
 			}
 		});
+
+		btnUpdateNPCs.setText("Update");
+		btnUpdateNPCs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				NPCsTool.update();
+			}
+		});
+
+		tableNPCs.setModel(new NPCTableModel(new RSNPC[0]));
+		tableNPCs.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tableNPCs.getColumn("Projection").setCellRenderer(new ButtonRenderer());
+		tableNPCs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jScrollPane3.setViewportView(tableNPCs);
 
 		GroupLayout panel3Layout = new GroupLayout(panel3);
@@ -677,6 +671,7 @@ public class Dock extends JFrame {
 		
 		// Don't auto update if the tab isnt open.
 		ObjectsTool.doAutoUpdate = false;
+		NPCsTool.doAutoUpdate = false;
 		
 		switch(tabs) {
 		case INSPECT_TOOL:
@@ -696,6 +691,10 @@ public class Dock extends JFrame {
 			ObjectsTool.doAutoUpdate = chkUpdateObjects.isSelected();
 			btnUpdateObjects.setEnabled(!chkUpdateObjects.isSelected());
 			break;
+		case NPCS:
+			NPCsTool.doAutoUpdate = chkUpdateNPCs.isSelected();
+			btnUpdateNPCs.setEnabled(!chkUpdateNPCs.isSelected());
+			break;
 		default:
 			break;
 		}
@@ -711,12 +710,12 @@ public class Dock extends JFrame {
 	private ButtonGroup btngroupPaths;
 	private JButton btnSettingsStopStart;
 	public JButton btnPathsStartStop;
-	private JButton btnUpdateNPCs;
+	public JButton btnUpdateNPCs;
 	public JButton btnUpdateObjects;
 	private JRadioButton btnWalkingMinimap;
 	private JRadioButton btnWalkingScreenPath;
 	private JCheckBox chkDock;
-	private JCheckBox chkUpdateNPCs;
+	public JCheckBox chkUpdateNPCs;
 	public JCheckBox chkUpdateObjects;
 	public JTextField inputPathName;
 	private JTextField inputSearchSetting;
@@ -755,7 +754,7 @@ public class Dock extends JFrame {
 	private Panel panel5;
 	private Panel panel6;
 	public JTable tableInspect;
-	private JTable tableNPCs;
+	public JTable tableNPCs;
 	public JTable tableObjects;
 	private JTable tableSettings;
 }
