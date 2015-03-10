@@ -1,4 +1,4 @@
-package scripts.LANScriptTools.Tools;
+package scripts.LANScriptTools.GUI;
 
 import java.awt.Component;
 

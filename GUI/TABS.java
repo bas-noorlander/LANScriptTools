@@ -1,4 +1,4 @@
-package scripts.LANScriptTools;
+package scripts.LANScriptTools.GUI;
 
 /**
  * @author Laniax

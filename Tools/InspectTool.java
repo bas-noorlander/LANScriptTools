@@ -11,7 +11,7 @@ import org.tribot.api2007.types.RSObjectDefinition;
 import org.tribot.api2007.types.RSPlayer;
 import org.tribot.api2007.types.RSTile;
 
-import scripts.LANScriptTools.ScriptToolsThread;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 import scripts.LanAPI.NPCs;
 import scripts.LanAPI.Objects;
 import scripts.LanAPI.Players;

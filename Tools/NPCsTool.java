@@ -5,8 +5,9 @@ import java.awt.event.ActionEvent;
 import org.tribot.api2007.NPCs;
 import org.tribot.api2007.Player;
 import org.tribot.api2007.types.RSNPC;
-import scripts.LANScriptTools.NPCTableModel;
-import scripts.LANScriptTools.ScriptToolsThread;
+
+import scripts.LANScriptTools.GUI.NPCTableModel;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 
 /**
  * @author Laniax

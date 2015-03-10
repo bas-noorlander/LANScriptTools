@@ -1,4 +1,4 @@
-package scripts.LANScriptTools;
+package scripts.LANScriptTools.Threading;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -10,6 +10,8 @@ import org.tribot.api.General;
 import org.tribot.api2007.Projection;
 import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
+
+import scripts.LANScriptTools.GUI.TABS;
 
 /**
  * @author Laniax

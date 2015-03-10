@@ -6,8 +6,8 @@ import org.tribot.api2007.Objects;
 import org.tribot.api2007.Player;
 import org.tribot.api2007.types.RSObject;
 
-import scripts.LANScriptTools.ObjectTableModel;
-import scripts.LANScriptTools.ScriptToolsThread;
+import scripts.LANScriptTools.GUI.ObjectTableModel;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 
 /**
  * @author Laniax

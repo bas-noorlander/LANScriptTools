@@ -1,4 +1,4 @@
-package scripts.LANScriptTools;
+package scripts.LANScriptTools.Threading;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;

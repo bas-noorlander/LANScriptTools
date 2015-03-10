@@ -9,6 +9,8 @@ import org.tribot.script.Script;
 import org.tribot.script.ScriptManifest;
 import org.tribot.script.interfaces.Painting;
 
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
+
 /**
  * @author Laniax
  * 

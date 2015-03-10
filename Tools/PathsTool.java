@@ -11,7 +11,7 @@ import java.io.StringReader;
 import org.tribot.api.General;
 import org.tribot.api2007.types.RSTile;
 
-import scripts.LANScriptTools.ScriptToolsThread;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 
 /**
  * @author Laniax

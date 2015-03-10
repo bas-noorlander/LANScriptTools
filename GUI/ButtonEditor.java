@@ -1,4 +1,4 @@
-package scripts.LANScriptTools.Tools;
+package scripts.LANScriptTools.GUI;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -12,9 +12,9 @@ import javax.swing.JTable;
 
 import org.tribot.api2007.types.RSModel;
 
-import scripts.LANScriptTools.NPCTableModel;
-import scripts.LANScriptTools.ObjectTableModel;
-import scripts.LANScriptTools.ScriptToolsThread;
+import scripts.LANScriptTools.GUI.NPCTableModel;
+import scripts.LANScriptTools.GUI.ObjectTableModel;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 
 /**
  * @author Laniax

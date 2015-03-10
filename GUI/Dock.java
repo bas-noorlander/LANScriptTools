@@ -1,4 +1,4 @@
-package scripts.LANScriptTools;
+package scripts.LANScriptTools.GUI;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -35,8 +35,8 @@ import org.tribot.api2007.types.RSNPC;
 import org.tribot.api2007.types.RSObject;
 import org.tribot.api2007.types.RSTile;
 
-import scripts.LANScriptTools.Tools.ButtonEditor;
-import scripts.LANScriptTools.Tools.ButtonRenderer;
+import scripts.LANScriptTools.Threading.Listeners;
+import scripts.LANScriptTools.Threading.ScriptToolsThread;
 import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.PathsTool;

@@ -1,4 +1,4 @@
-package scripts.LANScriptTools;
+package scripts.LANScriptTools.Threading;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -19,6 +19,7 @@ import org.tribot.api.Screen;
 import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
 
+import scripts.LANScriptTools.GUI.Dock;
 import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
