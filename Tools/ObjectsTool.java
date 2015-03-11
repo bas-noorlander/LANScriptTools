@@ -1,10 +1,13 @@
 package scripts.LANScriptTools.Tools;
 
 import java.awt.event.ActionEvent;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.tribot.api2007.Objects;
 import org.tribot.api2007.Player;
 import org.tribot.api2007.types.RSObject;
+import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.GUI.ObjectTableModel;
 import scripts.LANScriptTools.Threading.ScriptToolsThread;
@@ -13,29 +16,54 @@ import scripts.LANScriptTools.Threading.ScriptToolsThread;
  * @author Laniax
  *
  */
-public class ObjectsTool {
-	
-	public static boolean doAutoUpdate = true;
+public class ObjectsTool implements AbstractTool {
+
+	private final ScriptToolsThread script;
+
+	public boolean doAutoUpdate = true;
+
+	public Timer updateTimer = new Timer();
+
+	public ObjectsTool(ScriptToolsThread script) {
+		this.script = script;
+
+		updateTimer.scheduleAtFixedRate(new TimerTask(){
+			public void run() {
+				if (doAutoUpdate)
+					update();
+			}}, 2000, 2000);
+	}
 
 	/*
 	 * Fired when the auto update checkbox is toggled
 	 */
-	public static void chkUpdateObjectsActionPerformed(ActionEvent evt) {
-		doAutoUpdate = ScriptToolsThread.dock.chkUpdateObjects.isSelected();
-		ScriptToolsThread.dock.btnUpdateObjects.setEnabled(!doAutoUpdate);
+	public void chkUpdateObjectsActionPerformed(ActionEvent evt) {
+		doAutoUpdate = script.dock.chkUpdateObjects.isSelected();
+		script.dock.btnUpdateObjects.setEnabled(!doAutoUpdate);
 	}
-	
+
 	/*
 	 * Fired when the auto update timer executes or the update button was clicked.
 	 */
-	public static void update() {
-		
-		ObjectTableModel model = (ObjectTableModel)ScriptToolsThread.dock.tableObjects.getModel();
-		
+	public void update() {
+
+		ObjectTableModel model = (ObjectTableModel)script.dock.tableObjects.getModel();
+
 		RSObject[] objs = Objects.sortByDistance(Player.getPosition(), Objects.getAll(19));
-		
+
 		if (model != null && objs != null && objs.length > 0) {
 			model.setData(objs);
 		}
+	}
+
+	@Override
+	public void onTabChange() {
+		doAutoUpdate = script.dock.chkUpdateObjects.isSelected();
+		script.dock.btnUpdateObjects.setEnabled(!doAutoUpdate);
+	}
+
+	@Override
+	public void onTileSelected(RSTile tile) {
+		// Nothing to do!
 	}
 }

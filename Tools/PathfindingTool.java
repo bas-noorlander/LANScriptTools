@@ -24,71 +24,74 @@ import scripts.LANScriptTools.Threading.ScriptToolsThread;
  * @author Laniax
  *
  */
-public class PathfindingTool {
-	
+public class PathfindingTool implements AbstractTool {
+
+	private final ScriptToolsThread script;
 	private static DPathNavigator navigator = new DPathNavigator();
 
-	public static void update() {
-		
-		synchronized(ScriptToolsThread.LOCK) {
-			ScriptToolsThread.tilesToDraw.clear();
+	public PathfindingTool(ScriptToolsThread script) {
+		this.script = script;
+	}
+
+	public void update() {
+
+		synchronized(script.LOCK) {
+			script.tilesToDraw.clear();
 		}
 
-		String mode = getSelectedButtonText(ScriptToolsThread.dock.btngroupPathfinding);
-		
+		String mode = getSelectedButtonText(script.dock.btngroupPathfinding);
+
 		refreshSnippet(mode);
 
-		if (ScriptToolsThread.selectedTile != null) {
-			
-			synchronized(ScriptToolsThread.LOCK) {
-				ScriptToolsThread.tilesToDraw.add(ScriptToolsThread.selectedTile);
+		if (script.selectedTile != null) {
+
+			synchronized(script.LOCK) {
+				script.tilesToDraw.add(script.selectedTile);
 			}
-			
+
 			RSTile[] path = null;
 
 			switch (mode) {
-			
+
 			case "DPathNavigator":
-				path = navigator.findPath(ScriptToolsThread.selectedTile);
+				path = navigator.findPath(script.selectedTile);
 				break;
 
 			case "PathFinding":
-				path = PathFinding.generatePath(Player.getPosition(), ScriptToolsThread.selectedTile, Objects.getAt(ScriptToolsThread.selectedTile).length > 0);
+				path = PathFinding.generatePath(Player.getPosition(), script.selectedTile, Objects.getAt(script.selectedTile).length > 0);
 				break;
 
 			case "Walking Minimap": 
-				path = Walking.generateStraightPath(ScriptToolsThread.selectedTile);
+				path = Walking.generateStraightPath(script.selectedTile);
 				break;
 
 			case "Walking Screen Path":
-				path = Walking.generateStraightScreenPath(ScriptToolsThread.selectedTile);
+				path = Walking.generateStraightScreenPath(script.selectedTile);
 				break;
 
 			default:
 				break;
 			}
-			
+
 			if (path != null && path.length > 0) {
-				
-				synchronized(ScriptToolsThread.LOCK) {
-					ScriptToolsThread.tilesToDraw.addAll(Arrays.asList(path));
+
+				synchronized(script.LOCK) {
+					script.tilesToDraw.addAll(Arrays.asList(path));
 				}
-				
+
 			} else {
 				General.println("Error: was not able to generate a path using "+mode);
 			}
-			
 		}
-
 	}
 
-	private static void refreshSnippet(String mode) {
+	private void refreshSnippet(String mode) {
 
 		StringBuilder sb = new StringBuilder();
 
-		if (ScriptToolsThread.selectedTile != null) {
-			
-			String tileString = "new RSTile("+ScriptToolsThread.selectedTile.getX()+", "+ScriptToolsThread.selectedTile.getY()+", "+ScriptToolsThread.selectedTile.getPlane()+")";
+		if (script.selectedTile != null) {
+
+			String tileString = "new RSTile("+script.selectedTile.getX()+", "+script.selectedTile.getY()+", "+script.selectedTile.getPlane()+")";
 
 			switch (mode) {
 
@@ -100,7 +103,7 @@ public class PathfindingTool {
 				break;
 
 			case "PathFinding": 
-				sb.append("RSTile[] path = PathFinding.generatePath(Player.getPosition(), "+tileString+", "+(Objects.getAt(ScriptToolsThread.selectedTile).length > 0)+");");
+				sb.append("RSTile[] path = PathFinding.generatePath(Player.getPosition(), "+tileString+", "+(Objects.getAt(script.selectedTile).length > 0)+");");
 				break;
 
 			case "Walking Minimap": 
@@ -116,20 +119,20 @@ public class PathfindingTool {
 			}
 		}
 
-		ScriptToolsThread.dock.outputPathFinding.setText(sb.toString());
+		script.dock.outputPathFinding.setText(sb.toString());
 	}
-	
+
 	/**
 	 * Fired when the Copy to Clipboard button is clicked
 	 */
-	public static void btnCopyPathfindingActionPerformed(ActionEvent evt) {
-		StringSelection stringSelection = new StringSelection(ScriptToolsThread.dock.outputPathFinding.getText());
+	public void btnCopyPathfindingActionPerformed(ActionEvent evt) {
+		StringSelection stringSelection = new StringSelection(script.dock.outputPathFinding.getText());
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 		General.println("Snippet copied to clipboard.");
 	}
 
-	private static String getSelectedButtonText(ButtonGroup buttonGroup) {
+	private String getSelectedButtonText(ButtonGroup buttonGroup) {
 		for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
 
@@ -138,6 +141,16 @@ public class PathfindingTool {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void onTabChange() {
+		// Nothing to do!
+	}
+
+	@Override
+	public void onTileSelected(RSTile tile) {
+		update();
 	}
 
 

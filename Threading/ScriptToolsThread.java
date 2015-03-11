@@ -2,16 +2,12 @@ package scripts.LANScriptTools.Threading;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import java.util.HashMap;
 import javax.swing.JFrame;
 
 import org.tribot.api.General;
@@ -20,12 +16,14 @@ import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.GUI.Dock;
+import scripts.LANScriptTools.GUI.TABS;
+import scripts.LANScriptTools.Tools.AbstractTool;
 import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathfindingTool;
 import scripts.LANScriptTools.Tools.PathsTool;
-import scripts.LanAPI.Projecting;
+import scripts.LANScriptTools.Tools.SettingsTool;
 
 /**
  * The thread that keeps running even after the script stops.
@@ -37,32 +35,57 @@ public class ScriptToolsThread implements Runnable {
 
 	// Dock/misc stuff
 	private final Thread scriptThread;
+	private final PaintThread paint;
+	
 	private Frame tribotFrame;
 	private Component applet;
-	public static Dock dock;
-	public static boolean quitting = false;
-	public static boolean doDock = true;
-	public static Object LOCK = new Object();
+	
+	public Dock dock;
+	public Object LOCK = new Object();
+	
+	public boolean quitting = false;
 
+	public final Adapters adapters = new Adapters(this);
+	public HashMap<TABS, AbstractTool> observers = new HashMap<TABS, AbstractTool>();
+	
 	// Tool stuff
-	public static RSTile selectedTile;
-	public static boolean doGeneratePath = false;
-	public static ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
-	public static Timer updateTimer = new Timer();
+	public RSTile selectedTile;
+	public ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
 
 	// Paint stuff
-	public static ArrayList<RSModel> entitiesToDraw = new ArrayList<RSModel>();
-	public static ArrayList<RSTile> tilesToDraw = new ArrayList<RSTile>();
+	public ArrayList<RSModel> entitiesToDraw = new ArrayList<RSModel>();
+	public ArrayList<RSTile> tilesToDraw = new ArrayList<RSTile>();
 
 	public ScriptToolsThread(Thread scriptThread, Graphics g) {
 
 		this.scriptThread = scriptThread;
+		
+		observers.put(TABS.INSPECT_TOOL, new InspectTool(this));
+		observers.put(TABS.PATHS, new PathsTool(this));
+		observers.put(TABS.OBJECTS, new ObjectsTool(this));
+		observers.put(TABS.NPCS, new NPCsTool(this));
+		observers.put(TABS.PATHFINDING, new PathfindingTool(this));
+		observers.put(TABS.SETTINGS, new SettingsTool(this));
 
 		// Since the original paint thread died, create a new one.
-		new Thread(new PaintThread((Graphics2D)g)).start();
+		paint = new PaintThread((Graphics2D)g, this);
+		new Thread(paint).start();
+		
+		// Prepare our GUI
+		dock = new Dock(this);
+	}
+	
+	public void setSelectedTile(RSTile tile) {
+		
+		synchronized (LOCK) {
+			paint.selectTile = tile;
+		}
+		
+		selectedTile = tile;
 	}
 
 	public void run() {
+		
 		// Wait until previous thread properly died down.
 		// We do this because it has a nack of closing all script-made frames when stopping.
 		while (scriptThread.isAlive()){
@@ -77,45 +100,36 @@ public class ScriptToolsThread implements Runnable {
 				tribotFrame = frame;	
 		}
 
-		// Boot up our GUI
+		/*Boot up our GUI
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
-					dock = new Dock();
+					
 				}
 			});
 		} catch (InvocationTargetException | InterruptedException e) {
 			e.printStackTrace();
-		}
+		}*/
 
 		// and lets try to attach to tribot now
-		if (tribotFrame != null && dock != null) {
+		if (tribotFrame != null) {
 			// set the Dock to the current tribot position/size
 			Dimension dim = tribotFrame.getSize();
 			dock.setPosition(tribotFrame.getLocation(), (int) dim.getWidth());
 
 			// Listen to resize events on the tribot frame
-			tribotFrame.addComponentListener(Listeners.getResizeListener());
+			tribotFrame.addComponentListener(adapters.getResizeListener());
 
 			// Listen to move events on the tribot frame
-			tribotFrame.addComponentListener(Listeners.getMoveListener());
+			tribotFrame.addComponentListener(adapters.getMoveListener());
 
 			// Tribot's mouse interfaces only work when a script is running.
 			// So we have to hook the mouse to the applet the old fashioned way.
 			applet = tribotFrame.findComponentAt(new Point((int)Screen.getViewport().getCenterX(), (int)Screen.getViewport().getCenterY()));
 			if (applet != null) {
-				applet.addMouseListener(Listeners.getMouseListener());
+				applet.addMouseListener(adapters.getMouseListener());
 			}
 		}
-		
-		updateTimer.scheduleAtFixedRate(new TimerTask(){
-			public void run() {
-				if (ObjectsTool.doAutoUpdate) {
-					ObjectsTool.update();
-				} else if (NPCsTool.doAutoUpdate) {
-					NPCsTool.update();
-				}
-			}}, 2000, 2000);
 
 		while(!quitting) {
 
@@ -134,68 +148,14 @@ public class ScriptToolsThread implements Runnable {
 		General.println("[LAN] ScriptTools closed.");
 	}
 
-	public static void setSelectedTile(RSTile tile) {
-		
-		if (tile == null)
-			return;
-
-		 // remove old selected tile from paint
-		RSTile previousTile = selectedTile;
-		selectedTile = tile;
-		
-		switch (dock.getOpenTab()) {
-
-		case INSPECT_TOOL:
-			
-			synchronized(LOCK) {
-				tilesToDraw.remove(previousTile);
-				tilesToDraw.add(selectedTile);
-			}
-			
-			InspectTool.refresh(tile);
-			break;
-		case PATHS:
-			
-			if (doGeneratePath) {
-				
-				if (generatedPath.contains(tile)) { // if we already had the tile selected, remove it instead.
-					generatedPath.remove(tile);
-					synchronized(LOCK) {
-						tilesToDraw.remove(tile);
-					}
-				} else {
-					generatedPath.add(tile);
-					synchronized(LOCK) {
-						tilesToDraw.add(tile);
-					}
-				}
-				PathsTool.refreshSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
-			}
-			break;
-		case PATHFINDING:
-			PathfindingTool.update();
-			break;
-		default:
-			break;
-
-		}
-	}
-
-	public static void onTileClick(Point point) {
-		RSTile clickTile = Projecting.getTileAtPoint(point);
-		if (clickTile != null)
-			setSelectedTile(clickTile);
-	}
-
 	public void dispose() {
 		// Clean up with what we messed with!
-		dock.removeWindowListener(Listeners.getCloseListener());
-		updateTimer.cancel();
+		dock.removeWindowListener(adapters.getCloseListener());
 
 		if (tribotFrame != null) {
-			tribotFrame.removeComponentListener(Listeners.getMoveListener());
-			tribotFrame.removeComponentListener(Listeners.getResizeListener());
-			applet.removeMouseListener(Listeners.getMouseListener());
+			tribotFrame.removeComponentListener(adapters.getMoveListener());
+			tribotFrame.removeComponentListener(adapters.getResizeListener());
+			applet.removeMouseListener(adapters.getMouseListener());
 		}
 	}
 }

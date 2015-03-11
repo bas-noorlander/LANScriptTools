@@ -11,8 +11,6 @@ import org.tribot.api2007.Projection;
 import org.tribot.api2007.types.RSModel;
 import org.tribot.api2007.types.RSTile;
 
-import scripts.LANScriptTools.GUI.TABS;
-
 /**
  * @author Laniax
  *
@@ -20,26 +18,41 @@ import scripts.LANScriptTools.GUI.TABS;
 public class PaintThread implements Runnable {
 
 	private final Graphics2D g;
+	private final ScriptToolsThread script;
 
 	private final RenderingHints antialiasing = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 	private Color blackTransparent = new Color(0, 0, 0, 120);
-	private Color cyanSlightTransparent = new Color(0,246,255, 200);
+	private Color cyanSlightTransparent = new Color(0, 246, 255, 200);
+	private Color redSlightTransparent = new Color(228, 2, 2, 200);
+	
+	RSTile selectTile = null;
 
-	public PaintThread(Graphics2D g) {
+	public PaintThread(Graphics2D g, ScriptToolsThread script) {
+		
 		g.setRenderingHints(antialiasing);
+		
 		this.g = g;
+		this.script = script;
 	}
 
 	@Override
 	public void run() {
 
 		// Quit this thread ASAP when the scripttools thread stops.
-		while(!ScriptToolsThread.quitting) {
+		while(!script.quitting) {
 
-			synchronized(ScriptToolsThread.LOCK) {
+			synchronized(script.LOCK) {
 				
-				for (RSModel obj : ScriptToolsThread.entitiesToDraw) {
+				if (selectTile != null && selectTile.isOnScreen()) {
+					Polygon tilePoly = Projection.getTileBoundsPoly(selectTile, 0);
+					g.setColor(blackTransparent);
+					g.fillPolygon(tilePoly);
+					g.setColor(redSlightTransparent);
+					g.drawPolygon(tilePoly);
+				}
+				
+				for (RSModel obj : script.entitiesToDraw) {
 					
 					if (obj.getVisiblePoints().length > 0) {
 						
@@ -53,9 +66,9 @@ public class PaintThread implements Runnable {
 					}
 				}
 
-				for (int i = 0; i < ScriptToolsThread.tilesToDraw.size(); i++) {
+				for (int i = 0; i < script.tilesToDraw.size(); i++) {
 					
-					RSTile tile = ScriptToolsThread.tilesToDraw.get(i);
+					RSTile tile = script.tilesToDraw.get(i);
 
 					if (tile == null || !tile.isOnScreen())
 						continue;
@@ -70,7 +83,7 @@ public class PaintThread implements Runnable {
 						// Draw a line between all tiles in the path tool.
 						if (i > 0) {
 							Point curTile = Projection.tileToScreen(tile, 0);
-							Point prevTile = Projection.tileToScreen(ScriptToolsThread.tilesToDraw.get(i-1), 0);
+							Point prevTile = Projection.tileToScreen(script.tilesToDraw.get(i-1), 0);
 							g.drawLine(curTile.x, curTile.y, prevTile.x, prevTile.y);
 						}
 					}

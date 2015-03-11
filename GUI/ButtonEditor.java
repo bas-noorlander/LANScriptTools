@@ -24,14 +24,17 @@ public class ButtonEditor extends DefaultCellEditor {
 
 	private static final long serialVersionUID = 8911310406960923820L;
 
+	private final ScriptToolsThread script;
+
 	protected JButton button;
 
 	private RSModel object;
 
 	private boolean isPushed;
 
-	public ButtonEditor(JCheckBox checkBox) {
+	public ButtonEditor(JCheckBox checkBox, ScriptToolsThread script) {
 		super(checkBox);
+		this.script = script;
 		button = new JButton();
 		button.setOpaque(true);
 		button.addActionListener(new ActionListener() {
@@ -49,7 +52,7 @@ public class ButtonEditor extends DefaultCellEditor {
 			button.setForeground(table.getForeground());
 			button.setBackground(table.getBackground());
 		}
-		
+
 		Object model = table.getModel();
 		if (model != null) {
 			if (model instanceof ObjectTableModel) {
@@ -58,28 +61,28 @@ public class ButtonEditor extends DefaultCellEditor {
 				object = ((NPCTableModel)model).getNPCAt(row).getModel();
 			}
 		}
-		
+
 		isPushed = true;
 		return button;
 	}
 
 	public RSModel getCellEditorValue() {
 		if (isPushed) {
-			
-			synchronized(ScriptToolsThread.LOCK){
-				
+
+			synchronized(script.LOCK){
+
 				boolean found = false;
-				
-				for (Iterator<RSModel> iterator = ScriptToolsThread.entitiesToDraw.iterator(); iterator.hasNext();) {
+
+				for (Iterator<RSModel> iterator = script.entitiesToDraw.iterator(); iterator.hasNext();) {
 					if (iterator.next().getIndexCount() == object.getIndexCount()) {
 						iterator.remove();
 						found = true;
 						break;
 					}
 				}
-				
+
 				if (!found) {
-					ScriptToolsThread.entitiesToDraw.add(object);
+					script.entitiesToDraw.add(object);
 				}
 			}
 		}

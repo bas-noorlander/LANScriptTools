@@ -8,7 +8,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -33,17 +32,13 @@ import javax.swing.table.DefaultTableModel;
 
 import org.tribot.api2007.types.RSNPC;
 import org.tribot.api2007.types.RSObject;
-import org.tribot.api2007.types.RSTile;
 
-import scripts.LANScriptTools.Threading.Listeners;
 import scripts.LANScriptTools.Threading.ScriptToolsThread;
-import scripts.LANScriptTools.Tools.InspectTool;
+import scripts.LANScriptTools.Tools.AbstractTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathfindingTool;
-
-
 
 /**
  * @author Laniax
@@ -52,13 +47,19 @@ import scripts.LANScriptTools.Tools.PathfindingTool;
 public class Dock extends JFrame {
 
 	private static final long serialVersionUID = -1416786796525087646L;
+	
+	private final ScriptToolsThread script;
+	
+	public boolean doDock = true;
 
-	public Dock() {
+	public Dock(ScriptToolsThread script) {
 
+		this.script = script;
+		
 		createGUI();
 
 		// Listen to close events on the dock.
-		addWindowListener(Listeners.getCloseListener());
+		addWindowListener(script.adapters.getCloseListener());
 	}
 
 	/**
@@ -70,13 +71,28 @@ public class Dock extends JFrame {
 		setLocation((int) (p.getX() + tribotWidth + 5), (int) p.getY());
 	}
 
-
 	/**
 	 * Gets the index of the currently open tool.
 	 * @return index
 	 */
 	public TABS getOpenTab() {
 		return TABS.values()[tabPane.getSelectedIndex()];
+	}
+	
+	private void onChangeTab(final TABS tab) {
+		
+		// We clear the things to draw on each tab switch
+		script.setSelectedTile(null);
+		script.tilesToDraw.clear();
+		script.entitiesToDraw.clear();
+
+		// Don't auto update if the tab isnt open.
+		((ObjectsTool)script.observers.get(TABS.OBJECTS)).doAutoUpdate = false;
+		((NPCsTool)script.observers.get(TABS.NPCS)).doAutoUpdate = false;
+		
+		// notify the appropriate tool that the tab has became active.
+		AbstractTool ob = script.observers.get(tab);
+		ob.onTabChange();
 	}
 
 	/**
@@ -139,7 +155,7 @@ public class Dock extends JFrame {
 		inputSearchSetting = new JTextField();
 		jLabel46 = new JLabel();
 		jScrollPane6 = new JScrollPane();
-		listSettingsLog = new JList();
+		listSettingsLog = new JList<String>();
 		chkDock = new JCheckBox();
 		btngroupPaths = new ButtonGroup();
 		btngroupPathfinding = new ButtonGroup();
@@ -165,9 +181,9 @@ public class Dock extends JFrame {
 		tableInspect.setModel(new DefaultTableModel(
 				new Object [][] {},
 				new String [] {"ID", "Type", "Name", "Actions"}) {
-			Class[] types = new Class [] {Integer.class, String.class, String.class, String.class};
+			Class<?>[] types = new Class [] {Integer.class, String.class, String.class, String.class};
 
-			public Class getColumnClass(int columnIndex) {
+			public Class<?> getColumnClass(int columnIndex) {
 				return types [columnIndex];
 			}
 
@@ -249,7 +265,7 @@ public class Dock extends JFrame {
 		btnPublic.setText("Public");
 		btnPublic.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathsTool.btnAccessModifierActionPerformed(evt);
+				((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt);
 			}
 		});
 
@@ -257,7 +273,7 @@ public class Dock extends JFrame {
 		btnPrivate.setText("Private");
 		btnPrivate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathsTool.btnAccessModifierActionPerformed(evt);
+				((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt);
 			}
 		});
 
@@ -267,13 +283,13 @@ public class Dock extends JFrame {
 		inputPathName.setText("pathName");
 		inputPathName.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
-				PathsTool.refreshFirstLine();
+				((PathsTool)script.observers.get(TABS.PATHS)).refreshFirstLine();
 			}
 			public void removeUpdate(DocumentEvent e) {
-				PathsTool.refreshFirstLine();
+				//PathsTool.refreshFirstLine();
 			}
 			public void insertUpdate(DocumentEvent e) {
-				PathsTool.refreshFirstLine();
+				//PathsTool.refreshFirstLine();
 			}
 		});
 
@@ -284,7 +300,7 @@ public class Dock extends JFrame {
 		btnCopyPaths.setMargin(new Insets(0, 0, 0, 0));
 		btnCopyPaths.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathsTool.btnCopyPathsActionPerformed(evt);
+				((PathsTool)script.observers.get(TABS.PATHS)).btnCopyPathsActionPerformed(evt);
 			}
 		});
 
@@ -293,7 +309,7 @@ public class Dock extends JFrame {
 		btnPathsStartStop.setMargin(new Insets(0, 0, 0, 0));
 		btnPathsStartStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathsTool.btnPathsStartStopActionPerformed(evt);
+				((PathsTool)script.observers.get(TABS.PATHS)).btnPathsStartStopActionPerformed(evt);
 			}
 		});
 
@@ -302,7 +318,7 @@ public class Dock extends JFrame {
 		btnClear.setMargin(new Insets(0, 0, 0, 0));
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathsTool.btnClearActionPerformed(evt);
+				((PathsTool)script.observers.get(TABS.PATHS)).btnClearActionPerformed(evt);
 			}
 		});
 
@@ -369,7 +385,7 @@ public class Dock extends JFrame {
 		jLabel35.setText("This tab displays information about objects around you.");
 
 		tableObjects.setModel(new ObjectTableModel(new RSObject[0]));
-		tableObjects.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tableObjects.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox(), script));
 		tableObjects.getColumn("Projection").setCellRenderer(new ButtonRenderer());
 		tableObjects.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -379,13 +395,13 @@ public class Dock extends JFrame {
 		chkUpdateObjects.setSelected(true);
 		chkUpdateObjects.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				ObjectsTool.chkUpdateObjectsActionPerformed(evt);
+				((ObjectsTool)script.observers.get(TABS.OBJECTS)).chkUpdateObjectsActionPerformed(evt);
 			}
 		});
 		btnUpdateObjects.setText("Update");
 		btnUpdateObjects.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				ObjectsTool.update();
+				((ObjectsTool)script.observers.get(TABS.OBJECTS)).update();
 			}
 		});
 
@@ -427,19 +443,19 @@ public class Dock extends JFrame {
 		chkUpdateNPCs.setSelected(true);
 		chkUpdateNPCs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				NPCsTool.chkUpdateNPCsActionPerformed(evt);
+				((NPCsTool)script.observers.get(TABS.NPCS)).chkUpdateNPCsActionPerformed(evt);
 			}
 		});
 
 		btnUpdateNPCs.setText("Update");
 		btnUpdateNPCs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				NPCsTool.update();
+				((NPCsTool)script.observers.get(TABS.NPCS)).update();
 			}
 		});
 
 		tableNPCs.setModel(new NPCTableModel(new RSNPC[0]));
-		tableNPCs.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox()));
+		tableNPCs.getColumn("Projection").setCellEditor(new ButtonEditor(new JCheckBox(), script));
 		tableNPCs.getColumn("Projection").setCellRenderer(new ButtonRenderer());
 		tableNPCs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jScrollPane3.setViewportView(tableNPCs);
@@ -495,22 +511,22 @@ public class Dock extends JFrame {
 
 		btnDPathNavigator.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathfindingTool.update();
+				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
 			}
 		});
 		btnPathFinding.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathfindingTool.update();
+				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
 			}
 		});
 		btnWalkingMinimap.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathfindingTool.update();
+				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
 			}
 		});
 		btnWalkingScreenPath.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathfindingTool.update();
+				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
 			}
 		});
 
@@ -519,7 +535,7 @@ public class Dock extends JFrame {
 		btnCopyPathFinding.setMargin(new Insets(0, 0, 0, 0));
 		btnCopyPathFinding.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PathfindingTool.btnCopyPathfindingActionPerformed(evt);
+				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).btnCopyPathfindingActionPerformed(evt);
 			}
 		});
 
@@ -580,14 +596,14 @@ public class Dock extends JFrame {
 						"ID", "Value"
 				}
 				) {
-			Class[] types = new Class [] {
+			Class<?>[] types = new Class [] {
 					Integer.class, Integer.class
 			};
 			boolean[] canEdit = new boolean [] {
 					false, false
 			};
 
-			public Class getColumnClass(int columnIndex) {
+			public Class<?> getColumnClass(int columnIndex) {
 				return types [columnIndex];
 			}
 
@@ -658,7 +674,7 @@ public class Dock extends JFrame {
 		chkDock.setText("Dock to the TriBot window");
 		chkDock.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				ScriptToolsThread.doDock = chkDock.isSelected();
+				doDock = chkDock.isSelected();
 			}
 		});
 
@@ -685,43 +701,6 @@ public class Dock extends JFrame {
 				);
 
 		pack();
-	}
-
-	protected void onChangeTab(TABS tabs) {
-
-		// We clear the hings to draw on each tab switch
-		ScriptToolsThread.tilesToDraw.clear();
-		ScriptToolsThread.entitiesToDraw.clear();
-
-		// Don't auto update if the tab isnt open.
-		ObjectsTool.doAutoUpdate = false;
-		NPCsTool.doAutoUpdate = false;
-
-		switch(tabs) {
-		case INSPECT_TOOL:
-			// Draw the selected tile only.
-			ScriptToolsThread.tilesToDraw.add(ScriptToolsThread.selectedTile);
-			InspectTool.refresh(ScriptToolsThread.selectedTile);
-			break;
-		case PATHS:
-			// Draw the entire currently selected path
-			for (RSTile tile : ScriptToolsThread.generatedPath)
-				ScriptToolsThread.tilesToDraw.add(tile);
-
-			// And clear our selected tile
-			ScriptToolsThread.selectedTile = null;
-			break;
-		case OBJECTS:
-			ObjectsTool.doAutoUpdate = chkUpdateObjects.isSelected();
-			btnUpdateObjects.setEnabled(!chkUpdateObjects.isSelected());
-			break;
-		case NPCS:
-			NPCsTool.doAutoUpdate = chkUpdateNPCs.isSelected();
-			btnUpdateNPCs.setEnabled(!chkUpdateNPCs.isSelected());
-			break;
-		default:
-			break;
-		}
 	}
 
 	private JButton btnClear;
@@ -768,7 +747,7 @@ public class Dock extends JFrame {
 	private JScrollPane jScrollPane8;
 	private JTabbedPane tabPane;
 	private JLabel lanapiHelp;
-	private JList listSettingsLog;
+	private JList<String> listSettingsLog;
 	private JTextArea outputInspect;
 	public JTextArea outputPath;
 	public JTextArea outputPathFinding;

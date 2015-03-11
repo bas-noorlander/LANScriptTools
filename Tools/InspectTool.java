@@ -20,9 +20,15 @@ import scripts.LanAPI.Players;
  * @author Laniax
  *
  */
-public class InspectTool {
+public class InspectTool implements AbstractTool {
 
-	private static String arrayToSingle(String[] array) {
+	private final ScriptToolsThread script;
+	
+	public InspectTool(ScriptToolsThread script) {
+		this.script = script;
+	}
+
+	private String arrayToSingle(String[] array) {
 
 		StringBuilder builder = new StringBuilder();
 
@@ -38,11 +44,11 @@ public class InspectTool {
 		return builder.toString();
 	}
 
-	public static void refresh(RSTile tile) {
+	public void refresh(RSTile tile) {
 
 		if (tile!= null) {
 			
-			DefaultTableModel model = (DefaultTableModel)ScriptToolsThread.dock.tableInspect.getModel();
+			DefaultTableModel model = (DefaultTableModel)script.dock.tableInspect.getModel();
 			model.setNumRows(0);
 
 			// Find all npcs on tile.
@@ -77,5 +83,15 @@ public class InspectTool {
 				model.addRow(new Object[] {null , "Player", player.getName(), "" });
 			}
 		}
+	}
+
+	@Override
+	public void onTabChange() {
+		// Nothing to do!
+	}
+
+	@Override
+	public void onTileSelected(RSTile tile) {
+		refresh(tile);
 	}
 }

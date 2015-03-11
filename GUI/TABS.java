@@ -5,10 +5,11 @@ package scripts.LANScriptTools.GUI;
  *
  */
 public enum TABS {
+	
 	INSPECT_TOOL,
 	PATHS,
 	OBJECTS,
 	NPCS,
 	PATHFINDING,
-	SETTINGS
+	SETTINGS,
 }

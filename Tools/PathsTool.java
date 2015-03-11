@@ -17,33 +17,41 @@ import scripts.LANScriptTools.Threading.ScriptToolsThread;
  * @author Laniax
  *
  */
-public class PathsTool {
+public class PathsTool implements AbstractTool {
 
-	public static void refreshFirstLine() {
+	private final ScriptToolsThread script;
 
-		StringBuilder sb = new StringBuilder(ScriptToolsThread.dock.outputPath.getText());
+	private boolean doGeneratePath = false;
+
+	public PathsTool(ScriptToolsThread script) {
+		this.script = script;
+	}
+
+	public void refreshFirstLine() {
+
+		StringBuilder sb = new StringBuilder(script.dock.outputPath.getText());
 
 		int removeIndex = 0;
 
 		// clear first line (if any)
-		try (BufferedReader rd = new BufferedReader(new StringReader(ScriptToolsThread.dock.outputPath.getText()))) {
+		try (BufferedReader rd = new BufferedReader(new StringReader(script.dock.outputPath.getText()))) {
 			removeIndex = rd.readLine().length();
 		} catch (IOException e) {}
 
 		sb.delete(0, removeIndex);
 
-		sb.insert(0, (ScriptToolsThread.dock.btnPublic.isSelected() ? "public": "private") + " static final RSTile[] "+ScriptToolsThread.dock.inputPathName.getText()+" = new RSTile[] {");
+		sb.insert(0, (script.dock.btnPublic.isSelected() ? "public": "private") + " static final RSTile[] "+script.dock.inputPathName.getText()+" = new RSTile[] {");
 
-		ScriptToolsThread.dock.outputPath.setText(sb.toString());
+		script.dock.outputPath.setText(sb.toString());
 	}
 
-	public static void refreshSnippet(RSTile[] path) {
+	public void refreshSnippet(RSTile[] path) {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(ScriptToolsThread.dock.btnPublic.isSelected() ? "public": "private");
+		sb.append(script.dock.btnPublic.isSelected() ? "public": "private");
 		sb.append(" static final RSTile[] ");
-		sb.append(ScriptToolsThread.dock.inputPathName.getText());
+		sb.append(script.dock.inputPathName.getText());
 		sb.append(" = new RSTile[] {");
 
 		sb.append(System.getProperty("line.separator"));
@@ -81,22 +89,22 @@ public class PathsTool {
 		}
 		sb.append("};");
 
-		ScriptToolsThread.dock.outputPath.setText(sb.toString());
+		script.dock.outputPath.setText(sb.toString());
 	}
 
 
 	/**
 	 * Fired when the 'public' or 'private' radiobutton is clicked
 	 */
-	public static void btnAccessModifierActionPerformed(ActionEvent evt) {
-		PathsTool.refreshFirstLine();
+	public void btnAccessModifierActionPerformed(ActionEvent evt) {
+		refreshFirstLine();
 	}
 
 	/**
 	 * Fired when the Copy to Clipboard button is clicked
 	 */
-	public static void btnCopyPathsActionPerformed(ActionEvent evt) {
-		StringSelection stringSelection = new StringSelection(ScriptToolsThread.dock.outputPath.getText());
+	public void btnCopyPathsActionPerformed(ActionEvent evt) {
+		StringSelection stringSelection = new StringSelection(script.dock.outputPath.getText());
 		Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clpbrd.setContents(stringSelection, null);
 		General.println("Path copied to clipboard.");
@@ -105,22 +113,52 @@ public class PathsTool {
 	/**
 	 * Fired when the clear button is clicked
 	 */
-	public static void btnClearActionPerformed(ActionEvent evt) {
-		ScriptToolsThread.generatedPath.clear();
-		PathsTool.refreshSnippet(null);
+	public void btnClearActionPerformed(ActionEvent evt) {
+		script.generatedPath.clear();
+		
+		synchronized(script.LOCK) {
+			script.tilesToDraw.clear();
+		}
+		
+		refreshSnippet(null);
 	}
 
 	/**
 	 * Fired when the start/stop button is clicked
 	 */
-	public static void btnPathsStartStopActionPerformed(ActionEvent evt) {
+	public void btnPathsStartStopActionPerformed(ActionEvent evt) {
 
-		if (ScriptToolsThread.doGeneratePath) {
-			ScriptToolsThread.doGeneratePath = false;
-			ScriptToolsThread.dock.btnPathsStartStop.setText("Start");
+		if (doGeneratePath) {
+			doGeneratePath = false;
+			script.dock.btnPathsStartStop.setText("Start");
 		} else {
-			ScriptToolsThread.doGeneratePath = true;
-			ScriptToolsThread.dock.btnPathsStartStop.setText("Stop");
+			doGeneratePath = true;
+			script.dock.btnPathsStartStop.setText("Stop");
 		}
+	}
+
+	@Override
+	public void onTabChange() {
+		// Draw the entire currently selected path.
+		for (RSTile tile : script.generatedPath)
+			script.tilesToDraw.add(tile);
+	}
+
+	@Override
+	public void onTileSelected(RSTile tile) {
+
+		if (doGeneratePath) {
+
+			if (script.generatedPath.contains(tile)) { // if we already had the tile selected, remove it instead.
+				script.generatedPath.remove(tile);
+				synchronized(script.LOCK) {
+					script.tilesToDraw.remove(tile);
+				}
+			} else {
+				script.generatedPath.add(tile);
+				script.tilesToDraw.add(tile);
+			}
+		}
+		refreshSnippet(script.generatedPath.toArray(new RSTile[script.generatedPath.size()]));
 	}
 }
