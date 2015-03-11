@@ -37,7 +37,7 @@ public class PathsTool {
 		ScriptToolsThread.dock.outputPath.setText(sb.toString());
 	}
 
-	public static void refreshPathSnippet(RSTile[] path) {
+	public static void refreshSnippet(RSTile[] path) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -107,7 +107,7 @@ public class PathsTool {
 	 */
 	public static void btnClearActionPerformed(ActionEvent evt) {
 		ScriptToolsThread.generatedPath.clear();
-		PathsTool.refreshPathSnippet(null);
+		PathsTool.refreshSnippet(null);
 	}
 
 	/**

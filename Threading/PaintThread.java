@@ -66,7 +66,7 @@ public class PaintThread implements Runnable {
 					g.setColor(cyanSlightTransparent);
 					g.drawPolygon(tilePoly);
 					
-					if (ScriptToolsThread.dock.getOpenTab() == TABS.PATHS) {
+				//	if (ScriptToolsThread.dock.getOpenTab() == TABS.PATHS) {
 						// Draw a line between all tiles in the path tool.
 						if (i > 0) {
 							Point curTile = Projection.tileToScreen(tile, 0);
@@ -74,7 +74,7 @@ public class PaintThread implements Runnable {
 							g.drawLine(curTile.x, curTile.y, prevTile.x, prevTile.y);
 						}
 					}
-				}
+				//}
 			}
 
 			General.sleep(16);

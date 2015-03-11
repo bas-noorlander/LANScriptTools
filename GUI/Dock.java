@@ -41,6 +41,8 @@ import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
+import scripts.LANScriptTools.Tools.PathfindingTool;
+
 
 
 /**
@@ -475,33 +477,49 @@ public class Dock extends JFrame {
 		tabPane.addTab("NPCs", panel3);
 
 		jLabel43.setText("Here you can check how different pathfinding methods would walk to a tile.");
-
 		jLabel44.setText("Simply select a destination tile by clicking with the middle mouse button (scroll-wheel) on the tile and select your pathfinding algorithm below.");
-
-		btnDPathNavigator.setText("DPathNavigator");
-
-		btnPathFinding.setText("PathFinding");
 
 		outputPathFinding.setColumns(20);
 		outputPathFinding.setRows(5);
-		outputPathFinding.setText("DPathNavigator navigator = new DPathNavigator(); // Put this as a field in your class.\n\nRSTile[] path = navigator.findPath(new RSTile(0, 0, 0));");
 		jScrollPane4.setViewportView(outputPathFinding);
 
+		btnDPathNavigator.setText("DPathNavigator");
+		btnPathFinding.setText("PathFinding");
 		btnWalkingMinimap.setText("Walking Minimap");
-
 		btnWalkingScreenPath.setText("Walking Screen Path");
-		
+
 		btngroupPathfinding.add(btnDPathNavigator);
 		btngroupPathfinding.add(btnPathFinding);
 		btngroupPathfinding.add(btnWalkingMinimap);
 		btngroupPathfinding.add(btnWalkingScreenPath);
+
+		btnDPathNavigator.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PathfindingTool.update();
+			}
+		});
+		btnPathFinding.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PathfindingTool.update();
+			}
+		});
+		btnWalkingMinimap.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PathfindingTool.update();
+			}
+		});
+		btnWalkingScreenPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PathfindingTool.update();
+			}
+		});
 
 		btnCopyPathFinding.setText("Copy to clipboard");
 		btnCopyPathFinding.setInheritsPopupMenu(true);
 		btnCopyPathFinding.setMargin(new Insets(0, 0, 0, 0));
 		btnCopyPathFinding.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				//    btnCopyPathFindingActionPerformed(evt);
+				PathfindingTool.btnCopyPathfindingActionPerformed(evt);
 			}
 		});
 
@@ -674,11 +692,11 @@ public class Dock extends JFrame {
 		// We clear the hings to draw on each tab switch
 		ScriptToolsThread.tilesToDraw.clear();
 		ScriptToolsThread.entitiesToDraw.clear();
-		
+
 		// Don't auto update if the tab isnt open.
 		ObjectsTool.doAutoUpdate = false;
 		NPCsTool.doAutoUpdate = false;
-		
+
 		switch(tabs) {
 		case INSPECT_TOOL:
 			// Draw the selected tile only.
@@ -753,7 +771,7 @@ public class Dock extends JFrame {
 	private JList listSettingsLog;
 	private JTextArea outputInspect;
 	public JTextArea outputPath;
-	private JTextArea outputPathFinding;
+	public JTextArea outputPathFinding;
 	private Panel panel1;
 	private Panel panel2;
 	private Panel panel3;

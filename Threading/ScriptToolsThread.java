@@ -23,6 +23,7 @@ import scripts.LANScriptTools.GUI.Dock;
 import scripts.LANScriptTools.Tools.InspectTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
+import scripts.LANScriptTools.Tools.PathfindingTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LanAPI.Projecting;
 
@@ -168,8 +169,11 @@ public class ScriptToolsThread implements Runnable {
 						tilesToDraw.add(tile);
 					}
 				}
-				PathsTool.refreshPathSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
+				PathsTool.refreshSnippet(generatedPath.toArray(new RSTile[generatedPath.size()]));
 			}
+			break;
+		case PATHFINDING:
+			PathfindingTool.update();
 			break;
 		default:
 			break;
@@ -186,6 +190,7 @@ public class ScriptToolsThread implements Runnable {
 	public void dispose() {
 		// Clean up with what we messed with!
 		dock.removeWindowListener(Listeners.getCloseListener());
+		updateTimer.cancel();
 
 		if (tribotFrame != null) {
 			tribotFrame.removeComponentListener(Listeners.getMoveListener());
