@@ -9,6 +9,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.SwingUtilities;
 
+import org.tribot.api2007.Projection;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Tools.AbstractTool;
@@ -19,7 +20,7 @@ import scripts.LanAPI.Projecting;
  *
  */
 public class Adapters {
-	
+
 	private final ResizeListener _resizeListener;
 	private final MoveListener _moveListener;
 	private final CloseListener _closeListener;
@@ -63,16 +64,22 @@ class CursorListener extends MouseAdapter {
 
 	public void mousePressed(MouseEvent e) {
 		if (SwingUtilities.isMiddleMouseButton(e)) {
-			
-			RSTile clickTile = Projecting.getTileAtPoint(e.getPoint());
-			
+
+			RSTile clickTile = null;
+
+			if (Projection.isInViewport(e.getPoint()))
+				clickTile = Projecting.getTileAtPoint(e.getPoint());
+			else if (Projection.isInMinimap(e.getPoint()))
+				clickTile = Projecting.getTileAtMinimapPoint(e.getPoint());
+
 			if (clickTile != null) {
-				
+
 				script.setSelectedTile(clickTile);
-				
+
 				AbstractTool ob = script.observers.get(script.dock.getOpenTab());
 				ob.onTileSelected(clickTile);
 			}
+
 		}
 	}
 }
