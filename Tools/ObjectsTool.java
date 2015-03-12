@@ -22,7 +22,7 @@ public class ObjectsTool implements AbstractTool {
 
 	public boolean doAutoUpdate = true;
 
-	public Timer updateTimer = new Timer();
+	private final Timer updateTimer = new Timer();
 
 	public ObjectsTool(ScriptToolsThread script) {
 		this.script = script;

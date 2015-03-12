@@ -9,6 +9,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -39,6 +40,7 @@ import scripts.LANScriptTools.Tools.NPCsTool;
 import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathfindingTool;
+import scripts.LANScriptTools.Tools.SettingsTool;
 
 /**
  * @author Laniax
@@ -87,12 +89,18 @@ public class Dock extends JFrame {
 		script.entitiesToDraw.clear();
 
 		// Don't auto update if the tab isnt open.
-		((ObjectsTool)script.observers.get(TABS.OBJECTS)).doAutoUpdate = false;
-		((NPCsTool)script.observers.get(TABS.NPCS)).doAutoUpdate = false;
+		ObjectsTool objectsTool = (ObjectsTool)script.observers.get(TABS.OBJECTS);
+		if (objectsTool != null)
+			objectsTool.doAutoUpdate = false;
+		
+		NPCsTool npcsTool = (NPCsTool)script.observers.get(TABS.NPCS);
+		if (npcsTool != null)
+			npcsTool.doAutoUpdate = false;
 		
 		// notify the appropriate tool that the tab has became active.
 		AbstractTool ob = script.observers.get(tab);
-		ob.onTabChange();
+		if (ob != null)
+			ob.onTabChange();
 	}
 
 	/**
@@ -155,7 +163,7 @@ public class Dock extends JFrame {
 		inputSearchSetting = new JTextField();
 		jLabel46 = new JLabel();
 		jScrollPane6 = new JScrollPane();
-		listSettingsLog = new JList<String>();
+		listSettingsLog = new JList<String>(new DefaultListModel<String>());
 		chkDock = new JCheckBox();
 		btngroupPaths = new ButtonGroup();
 		btngroupPathfinding = new ButtonGroup();
@@ -286,10 +294,10 @@ public class Dock extends JFrame {
 				((PathsTool)script.observers.get(TABS.PATHS)).refreshFirstLine();
 			}
 			public void removeUpdate(DocumentEvent e) {
-				//PathsTool.refreshFirstLine();
+				((PathsTool)script.observers.get(TABS.PATHS)).refreshFirstLine();
 			}
 			public void insertUpdate(DocumentEvent e) {
-				//PathsTool.refreshFirstLine();
+				((PathsTool)script.observers.get(TABS.PATHS)).refreshFirstLine();
 			}
 		});
 
@@ -599,16 +607,13 @@ public class Dock extends JFrame {
 			Class<?>[] types = new Class [] {
 					Integer.class, Integer.class
 			};
-			boolean[] canEdit = new boolean [] {
-					false, false
-			};
-
+			
 			public Class<?> getColumnClass(int columnIndex) {
 				return types [columnIndex];
 			}
 
 			public boolean isCellEditable(int rowIndex, int columnIndex) {
-				return canEdit [columnIndex];
+				return false;
 			}
 		});
 		tableSettings.getTableHeader().setReorderingAllowed(false);
@@ -620,6 +625,24 @@ public class Dock extends JFrame {
 		}
 
 		btnSettingsStopStart.setText("Stop");
+		
+		btnSettingsStopStart.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				((SettingsTool)script.observers.get(TABS.SETTINGS)).btnSettingsStopStartActionPerformed(evt);
+			}
+		});
+		
+		inputSearchSetting.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				((SettingsTool)script.observers.get(TABS.SETTINGS)).doFilter();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				((SettingsTool)script.observers.get(TABS.SETTINGS)).doFilter();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				((SettingsTool)script.observers.get(TABS.SETTINGS)).doFilter();
+			}
+		});
 
 		jLabel46.setText("Search ID:");
 
@@ -712,7 +735,7 @@ public class Dock extends JFrame {
 	public JRadioButton btnPublic;
 	private ButtonGroup btngroupPaths;
 	public ButtonGroup btngroupPathfinding;
-	private JButton btnSettingsStopStart;
+	public JButton btnSettingsStopStart;
 	public JButton btnPathsStartStop;
 	public JButton btnUpdateNPCs;
 	public JButton btnUpdateObjects;
@@ -722,7 +745,7 @@ public class Dock extends JFrame {
 	public JCheckBox chkUpdateNPCs;
 	public JCheckBox chkUpdateObjects;
 	public JTextField inputPathName;
-	private JTextField inputSearchSetting;
+	public JTextField inputSearchSetting;
 	private JLabel jLabel34;
 	private JLabel jLabel35;
 	private JLabel jLabel36;
@@ -747,7 +770,7 @@ public class Dock extends JFrame {
 	private JScrollPane jScrollPane8;
 	private JTabbedPane tabPane;
 	private JLabel lanapiHelp;
-	private JList<String> listSettingsLog;
+	public JList<String> listSettingsLog;
 	private JTextArea outputInspect;
 	public JTextArea outputPath;
 	public JTextArea outputPathFinding;
@@ -760,5 +783,5 @@ public class Dock extends JFrame {
 	public JTable tableInspect;
 	public JTable tableNPCs;
 	public JTable tableObjects;
-	private JTable tableSettings;
+	public JTable tableSettings;
 }

@@ -22,7 +22,7 @@ public class NPCsTool implements AbstractTool {
 	
 	public boolean doAutoUpdate = true;
 	
-	public Timer updateTimer = new Timer();
+	private final Timer updateTimer = new Timer();
 
 	/**
 	 * @param scriptToolsThread

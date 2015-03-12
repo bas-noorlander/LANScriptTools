@@ -96,7 +96,6 @@ public class PaintThread implements Runnable {
 						Point prevTile = Projection.tileToScreen(script.tilesToDraw.get(i-1), 0);
 						g.drawLine(curTile.x, curTile.y, prevTile.x, prevTile.y);
 
-
 						// Draw on minimap as well.
 						Point curTileMinimap = Projection.tileToMinimap(tile);
 						if (Projection.isInMinimap(curTileMinimap)) {

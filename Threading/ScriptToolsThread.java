@@ -60,19 +60,19 @@ public class ScriptToolsThread implements Runnable {
 
 		this.scriptThread = scriptThread;
 		
-		observers.put(TABS.INSPECT_TOOL, new InspectTool(this));
-		observers.put(TABS.PATHS, new PathsTool(this));
-		observers.put(TABS.OBJECTS, new ObjectsTool(this));
-		observers.put(TABS.NPCS, new NPCsTool(this));
-		observers.put(TABS.PATHFINDING, new PathfindingTool(this));
-		observers.put(TABS.SETTINGS, new SettingsTool(this));
-
 		// Since the original paint thread died, create a new one.
 		paint = new PaintThread((Graphics2D)g, this);
 		new Thread(paint).start();
 		
 		// Prepare our GUI
 		dock = new Dock(this);
+
+		observers.put(TABS.INSPECT_TOOL, new InspectTool(this));
+		observers.put(TABS.PATHS, new PathsTool(this));
+		observers.put(TABS.OBJECTS, new ObjectsTool(this));
+		observers.put(TABS.NPCS, new NPCsTool(this));
+		observers.put(TABS.PATHFINDING, new PathfindingTool(this));
+		observers.put(TABS.SETTINGS, new SettingsTool(this));
 	}
 	
 	public void setSelectedTile(RSTile tile) {
