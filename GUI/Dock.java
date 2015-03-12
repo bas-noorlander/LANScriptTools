@@ -1,6 +1,5 @@
 package scripts.LANScriptTools.GUI;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Panel;
@@ -8,6 +7,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -37,9 +37,9 @@ import org.tribot.api2007.types.RSObject;
 import scripts.LANScriptTools.Threading.ScriptToolsThread;
 import scripts.LANScriptTools.Tools.AbstractTool;
 import scripts.LANScriptTools.Tools.NPCsTool;
-import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.ObjectsTool;
 import scripts.LANScriptTools.Tools.PathfindingTool;
+import scripts.LANScriptTools.Tools.PathsTool;
 import scripts.LANScriptTools.Tools.SettingsTool;
 
 /**
@@ -115,10 +115,6 @@ public class Dock extends JFrame {
 		jLabel42 = new JLabel();
 		jScrollPane7 = new JScrollPane();
 		tableInspect = new JTable();
-		jScrollPane8 = new JScrollPane();
-		outputInspect = new JTextArea();
-		jLabel47 = new JLabel();
-		lanapiHelp = new JLabel();
 		panel1 = new Panel();
 		jLabel34 = new JLabel();
 		jLabel36 = new JLabel();
@@ -201,8 +197,6 @@ public class Dock extends JFrame {
 		});
 		jScrollPane7.setViewportView(tableInspect);
 
-		outputInspect.setColumns(20);
-		jScrollPane8.setViewportView(outputInspect);
 		if (tableInspect.getColumnModel().getColumnCount() > 0) {
 			tableInspect.getColumnModel().getColumn(0).setResizable(false);
 			tableInspect.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -214,13 +208,6 @@ public class Dock extends JFrame {
 			tableInspect.getColumnModel().getColumn(3).setPreferredWidth(300);
 		}
 
-		jLabel47.setText("LanAPI snippet:");
-
-		lanapiHelp.setFont(new Font("Tahoma", 1, 11)); 
-		lanapiHelp.setForeground(new Color(0, 0, 255));
-		lanapiHelp.setText("?");
-		lanapiHelp.setToolTipText("LanAPI is an open source extension to the TriBot API");
-
 		GroupLayout panel4Layout = new GroupLayout(panel4);
 		panel4.setLayout(panel4Layout);
 		panel4Layout.setHorizontalGroup(
@@ -229,13 +216,10 @@ public class Dock extends JFrame {
 						.addGap(23, 23, 23)
 						.addGroup(panel4Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
 								.addGroup(panel4Layout.createSequentialGroup()
-										.addComponent(jLabel47)
-										.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-										.addComponent(lanapiHelp))
-										.addComponent(jScrollPane7, GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
+									.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+										.addComponent(jScrollPane7, GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE))
 										.addComponent(jLabel42)
-										.addComponent(jLabel41)
-										.addComponent(jScrollPane8))
+										.addComponent(jLabel41))
 										.addContainerGap(32, Short.MAX_VALUE))
 				);
 		panel4Layout.setVerticalGroup(
@@ -249,11 +233,8 @@ public class Dock extends JFrame {
 						.addComponent(jScrollPane7, GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
 						.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
 						.addGroup(panel4Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-								.addComponent(jLabel47)
-								.addComponent(lanapiHelp))
-								.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-								.addComponent(jScrollPane8, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addGap(21, 21, 21))
+				
+								.addGap(21, 21, 21)))
 				);
 
 		tabPane.addTab("Inspect Tool", panel4);
@@ -759,7 +740,6 @@ public class Dock extends JFrame {
 	private JLabel jLabel44;
 	private JLabel jLabel45;
 	private JLabel jLabel46;
-	private JLabel jLabel47;
 	private JScrollPane jScrollPane1;
 	private JScrollPane jScrollPane2;
 	private JScrollPane jScrollPane3;
@@ -767,11 +747,8 @@ public class Dock extends JFrame {
 	private JScrollPane jScrollPane5;
 	private JScrollPane jScrollPane6;
 	private JScrollPane jScrollPane7;
-	private JScrollPane jScrollPane8;
 	private JTabbedPane tabPane;
-	private JLabel lanapiHelp;
 	public JList<String> listSettingsLog;
-	private JTextArea outputInspect;
 	public JTextArea outputPath;
 	public JTextArea outputPathFinding;
 	private Panel panel1;
