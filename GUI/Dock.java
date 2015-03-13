@@ -241,7 +241,7 @@ public class Dock extends JFrame {
 
 		jLabel34.setText("Here you can easily create paths to use in your script.");
 
-		jLabel36.setText("All you have to do is click the 'Start' button below and select tiles ingame by clicking the middle mouse button (scroll-wheel).");
+		jLabel36.setText("Click the 'Start' button below and select tiles ingame by clicking the middle mouse button (scroll-wheel).");
 
 		outputPath.setColumns(20);
 		outputPath.setRows(5);

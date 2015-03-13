@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.DefaultListModel;
 import javax.swing.table.DefaultTableModel;
 
-import org.tribot.api.General;
 import org.tribot.api.Timing;
 import org.tribot.api2007.types.RSTile;
 
@@ -60,8 +59,6 @@ public class SettingsTool implements AbstractTool {
 		
 		try {
 			int input = Integer.parseInt(script.dock.inputSearchSetting.getText());
-			
-			General.println(input);
 			
 			if (input < script.dock.tableSettings.getRowCount()-1) {
 				
