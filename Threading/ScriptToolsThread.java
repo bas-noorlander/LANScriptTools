@@ -17,13 +17,7 @@ import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.GUI.Dock;
 import scripts.LANScriptTools.GUI.TABS;
-import scripts.LANScriptTools.Tools.AbstractTool;
-import scripts.LANScriptTools.Tools.InspectTool;
-import scripts.LANScriptTools.Tools.NPCsTool;
-import scripts.LANScriptTools.Tools.ObjectsTool;
-import scripts.LANScriptTools.Tools.PathfindingTool;
-import scripts.LANScriptTools.Tools.PathsTool;
-import scripts.LANScriptTools.Tools.SettingsTool;
+import scripts.LANScriptTools.Tools.*;
 
 /**
  * The thread that keeps running even after the script stops.
@@ -41,7 +35,7 @@ public class ScriptToolsThread implements Runnable {
 	private Component applet;
 	
 	public Dock dock;
-	public Object LOCK = new Object();
+	public final Object LOCK = new Object();
 	
 	public boolean quitting = false;
 
@@ -52,7 +46,7 @@ public class ScriptToolsThread implements Runnable {
 	public RSTile selectedTile;
 	public ArrayList<RSTile> generatedPath = new ArrayList<RSTile>();
 
-	// Paint stuff
+	// PaintHelper stuff
 	public ArrayList<RSModel> entitiesToDraw = new ArrayList<RSModel>();
 	public ArrayList<RSTile> tilesToDraw = new ArrayList<RSTile>();
 
@@ -73,6 +67,7 @@ public class ScriptToolsThread implements Runnable {
 		observers.put(TABS.NPCS, new NPCsTool(this));
 		observers.put(TABS.PATHFINDING, new PathfindingTool(this));
 		observers.put(TABS.SETTINGS, new SettingsTool(this));
+		observers.put(TABS.VARBIT, new VarBitTool(this));
 	}
 	
 	public void setSelectedTile(RSTile tile) {
@@ -122,6 +117,8 @@ public class ScriptToolsThread implements Runnable {
 
 			// Listen to move events on the tribot frame
 			tribotFrame.addComponentListener(adapters.getMoveListener());
+
+
 
 			// Tribot's mouse interfaces only work when a script is running.
 			// So we have to hook the mouse to the applet the old fashioned way.

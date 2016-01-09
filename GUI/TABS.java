@@ -12,4 +12,5 @@ public enum TABS {
 	NPCS,
 	PATHFINDING,
 	SETTINGS,
+	VARBIT,
 }

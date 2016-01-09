@@ -12,9 +12,9 @@ import org.tribot.api2007.types.RSPlayer;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Threading.ScriptToolsThread;
-import scripts.LanAPI.NPCs;
-import scripts.LanAPI.Objects;
-import scripts.LanAPI.Players;
+import scripts.LanAPI.Game.Helpers.NPCsHelper;
+import scripts.LanAPI.Game.Helpers.ObjectsHelper;
+import scripts.LanAPI.Game.Helpers.PlayersHelper;
 
 /**
  * @author Laniax
@@ -52,13 +52,13 @@ public class InspectTool implements AbstractTool {
 			model.setNumRows(0);
 
 			// Find all npcs on tile.
-			RSNPC[] npcs = NPCs.getAt(tile);
+			RSNPC[] npcs = NPCsHelper.getAt(tile);
 			for (RSNPC npc : npcs) {
 				model.addRow(new Object[] {npc.getID(), "NPC", npc.getName(), arrayToSingle(npc.getActions()) });
 			}
 
 			// Find the object on tile.
-			RSObject obj = Objects.getAt(tile);
+			RSObject obj = ObjectsHelper.getAt(tile);
 			if (obj != null) {
 				RSObjectDefinition objDef = obj.getDefinition();
 				// There are a bazillion 'null' objects ingame. So lets filter those out.
@@ -78,7 +78,7 @@ public class InspectTool implements AbstractTool {
 			}
 
 			// And all other players
-			RSPlayer[] players = Players.findNear(tile);
+			RSPlayer[] players = PlayersHelper.findNear(tile);
 			for (RSPlayer player : players) {
 				model.addRow(new Object[] {null , "Player", player.getName(), "" });
 			}

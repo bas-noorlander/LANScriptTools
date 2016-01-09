@@ -13,7 +13,7 @@ import org.tribot.api2007.Projection;
 import org.tribot.api2007.types.RSTile;
 
 import scripts.LANScriptTools.Tools.AbstractTool;
-import scripts.LanAPI.Projecting;
+import scripts.LanAPI.Game.Helpers.ProjectionHelper;
 
 /**
  * @author Laniax
@@ -68,9 +68,9 @@ class CursorListener extends MouseAdapter {
 			RSTile clickTile = null;
 
 			if (Projection.isInViewport(e.getPoint()))
-				clickTile = Projecting.getTileAtPoint(e.getPoint());
+				clickTile = ProjectionHelper.getTileAtPoint(e.getPoint());
 			else if (Projection.isInMinimap(e.getPoint()))
-				clickTile = Projecting.getTileAtMinimapPoint(e.getPoint());
+				clickTile = ProjectionHelper.getTileAtMinimapPoint(e.getPoint());
 
 			if (clickTile != null) {
 

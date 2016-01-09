@@ -35,12 +35,7 @@ import org.tribot.api2007.types.RSNPC;
 import org.tribot.api2007.types.RSObject;
 
 import scripts.LANScriptTools.Threading.ScriptToolsThread;
-import scripts.LANScriptTools.Tools.AbstractTool;
-import scripts.LANScriptTools.Tools.NPCsTool;
-import scripts.LANScriptTools.Tools.ObjectsTool;
-import scripts.LANScriptTools.Tools.PathfindingTool;
-import scripts.LANScriptTools.Tools.PathsTool;
-import scripts.LANScriptTools.Tools.SettingsTool;
+import scripts.LANScriptTools.Tools.*;
 
 /**
  * @author Laniax
@@ -109,6 +104,16 @@ public class Dock extends JFrame {
 	@SuppressWarnings("serial")
 	private void createGUI() {
 
+        panel7 = new Panel();
+		jLabel50 = new JLabel();
+		jLabel49 = new JLabel();
+		jLabel48 = new JLabel();
+		jScrollPane10 = new JScrollPane();
+		jScrollPane9 = new JScrollPane();
+		tableVarbits = new JTable();
+		inputSearchVarbit = new JTextField();
+		btnVarbitsStopStart = new JButton();
+		listVarbitLog = new JList<>(new DefaultListModel<>());
 		tabPane = new JTabbedPane();
 		panel4 = new Panel();
 		jLabel41 = new JLabel();
@@ -159,7 +164,7 @@ public class Dock extends JFrame {
 		inputSearchSetting = new JTextField();
 		jLabel46 = new JLabel();
 		jScrollPane6 = new JScrollPane();
-		listSettingsLog = new JList<String>(new DefaultListModel<String>());
+		listSettingsLog = new JList<>(new DefaultListModel<>());
 		chkDock = new JCheckBox();
 		btngroupPaths = new ButtonGroup();
 		btngroupPathfinding = new ButtonGroup();
@@ -172,11 +177,7 @@ public class Dock extends JFrame {
 
 		tabPane.setTabPlacement(JTabbedPane.LEFT);
 		tabPane.setFont(new Font("Tahoma", 0, 14));
-		tabPane.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				onChangeTab(getOpenTab());
-			}
-		});
+		tabPane.addChangeListener(e -> onChangeTab(getOpenTab()));
 
 		jLabel41.setText("This is a multifunctional tool which will give you info on any tile you click on with your middle mouse button.");
 
@@ -252,19 +253,11 @@ public class Dock extends JFrame {
 		jLabel38.setText("Path name:");
 
 		btnPublic.setText("Public");
-		btnPublic.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt);
-			}
-		});
+		btnPublic.addActionListener(evt -> ((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt));
 
 		btnPrivate.setSelected(true);
 		btnPrivate.setText("Private");
-		btnPrivate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt);
-			}
-		});
+		btnPrivate.addActionListener(evt -> ((PathsTool)script.observers.get(TABS.PATHS)).btnAccessModifierActionPerformed(evt));
 
 		btngroupPaths.add(btnPublic);
 		btngroupPaths.add(btnPrivate);
@@ -287,29 +280,17 @@ public class Dock extends JFrame {
 		btnCopyPaths.setText("Copy to clipboard");
 		btnCopyPaths.setInheritsPopupMenu(true);
 		btnCopyPaths.setMargin(new Insets(0, 0, 0, 0));
-		btnCopyPaths.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathsTool)script.observers.get(TABS.PATHS)).btnCopyPathsActionPerformed(evt);
-			}
-		});
+		btnCopyPaths.addActionListener(evt -> ((PathsTool)script.observers.get(TABS.PATHS)).btnCopyPathsActionPerformed(evt));
 
 		btnPathsStartStop.setText("Start");
 		btnPathsStartStop.setInheritsPopupMenu(true);
 		btnPathsStartStop.setMargin(new Insets(0, 0, 0, 0));
-		btnPathsStartStop.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathsTool)script.observers.get(TABS.PATHS)).btnPathsStartStopActionPerformed(evt);
-			}
-		});
+		btnPathsStartStop.addActionListener(evt -> ((PathsTool)script.observers.get(TABS.PATHS)).btnPathsStartStopActionPerformed(evt));
 
 		btnClear.setText("Clear");
 		btnClear.setInheritsPopupMenu(true);
 		btnClear.setMargin(new Insets(0, 0, 0, 0));
-		btnClear.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathsTool)script.observers.get(TABS.PATHS)).btnClearActionPerformed(evt);
-			}
-		});
+		btnClear.addActionListener(evt -> ((PathsTool)script.observers.get(TABS.PATHS)).btnClearActionPerformed(evt));
 
 		GroupLayout panel1Layout = new GroupLayout(panel1);
 		panel1.setLayout(panel1Layout);
@@ -382,17 +363,9 @@ public class Dock extends JFrame {
 
 		chkUpdateObjects.setText("Auto Update");
 		chkUpdateObjects.setSelected(true);
-		chkUpdateObjects.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((ObjectsTool)script.observers.get(TABS.OBJECTS)).chkUpdateObjectsActionPerformed(evt);
-			}
-		});
+		chkUpdateObjects.addActionListener(evt -> ((ObjectsTool)script.observers.get(TABS.OBJECTS)).chkUpdateObjectsActionPerformed(evt));
 		btnUpdateObjects.setText("Update");
-		btnUpdateObjects.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((ObjectsTool)script.observers.get(TABS.OBJECTS)).update();
-			}
-		});
+		btnUpdateObjects.addActionListener(evt -> ((ObjectsTool)script.observers.get(TABS.OBJECTS)).update());
 
 		GroupLayout panel2Layout = new GroupLayout(panel2);
 		panel2.setLayout(panel2Layout);
@@ -498,26 +471,10 @@ public class Dock extends JFrame {
 		btngroupPathfinding.add(btnWalkingMinimap);
 		btngroupPathfinding.add(btnWalkingScreenPath);
 
-		btnDPathNavigator.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
-			}
-		});
-		btnPathFinding.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
-			}
-		});
-		btnWalkingMinimap.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
-			}
-		});
-		btnWalkingScreenPath.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update();
-			}
-		});
+		btnDPathNavigator.addActionListener(evt -> ((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update());
+		btnPathFinding.addActionListener(evt -> ((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update());
+		btnWalkingMinimap.addActionListener(evt -> ((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update());
+		btnWalkingScreenPath.addActionListener(evt -> ((PathfindingTool)script.observers.get(TABS.PATHFINDING)).update());
 
 		btnCopyPathFinding.setText("Copy to clipboard");
 		btnCopyPathFinding.setInheritsPopupMenu(true);
@@ -612,6 +569,10 @@ public class Dock extends JFrame {
 				((SettingsTool)script.observers.get(TABS.SETTINGS)).btnSettingsStopStartActionPerformed(evt);
 			}
 		});
+
+		btnVarbitsStopStart.setText("Stop");
+
+		btnVarbitsStopStart.addActionListener(evt -> ((VarBitTool)script.observers.get(TABS.VARBIT)).btnSettingsStopStartActionPerformed(evt));
 		
 		inputSearchSetting.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
@@ -624,6 +585,19 @@ public class Dock extends JFrame {
 				((SettingsTool)script.observers.get(TABS.SETTINGS)).doFilter();
 			}
 		});
+
+		inputSearchVarbit.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				((VarBitTool)script.observers.get(TABS.VARBIT)).doFilter();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				((VarBitTool)script.observers.get(TABS.VARBIT)).doFilter();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				((VarBitTool)script.observers.get(TABS.VARBIT)).doFilter();
+			}
+		});
+
 
 		jLabel46.setText("Search ID:");
 
@@ -674,13 +648,96 @@ public class Dock extends JFrame {
 
 		tabPane.addTab("Settings", panel6);
 
-		chkDock.setSelected(true);
-		chkDock.setText("Dock to the TriBot window");
-		chkDock.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				doDock = chkDock.isSelected();
+		jLabel48.setText("This is a VarBit explorer, which allows you to explore the game's varbits carefully.");
+
+		jLabel49.setText("This tool runs by default and works even though you are using other tools at the same time.");
+
+		tableVarbits.setModel(new javax.swing.table.DefaultTableModel(
+				new Object [][] {
+
+				},
+				new String [] {
+
+						"ID", "Value"
+				}
+		) {
+			Class[] types = new Class [] {
+					java.lang.Integer.class, java.lang.Integer.class
+			};
+			boolean[] canEdit = new boolean [] {
+					false, false
+			};
+
+			public Class getColumnClass(int columnIndex) {
+				return types [columnIndex];
+			}
+
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
+				return canEdit [columnIndex];
 			}
 		});
+		tableVarbits.getTableHeader().setReorderingAllowed(false);
+		jScrollPane9.setViewportView(tableVarbits);
+		if (tableVarbits.getColumnModel().getColumnCount() > 0) {
+			tableVarbits.getColumnModel().getColumn(0).setResizable(false);
+			tableVarbits.getColumnModel().getColumn(1).setResizable(false);
+			tableVarbits.getColumnModel().getColumn(1).setPreferredWidth(300);
+		}
+
+		btnVarbitsStopStart.setText("Stop");
+
+		jLabel50.setText("Search ID:");
+
+		jScrollPane10.setViewportView(listVarbitLog);
+
+		javax.swing.GroupLayout panel7Layout = new javax.swing.GroupLayout(panel7);
+		panel7.setLayout(panel7Layout);
+		panel7Layout.setHorizontalGroup(
+				panel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(panel7Layout.createSequentialGroup()
+								.addGap(28, 28, 28)
+								.addGroup(panel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+										.addComponent(jLabel49)
+										.addComponent(jLabel48)
+										.addGroup(panel7Layout.createSequentialGroup()
+												.addComponent(jLabel50)
+												.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+												.addComponent(inputSearchVarbit, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
+										.addGroup(panel7Layout.createSequentialGroup()
+												.addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 287, javax.swing.GroupLayout.PREFERRED_SIZE)
+												.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+												.addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)))
+								.addContainerGap())
+						.addGroup(panel7Layout.createSequentialGroup()
+								.addGap(222, 222, 222)
+								.addComponent(btnVarbitsStopStart, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+		);
+		panel7Layout.setVerticalGroup(
+				panel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+						.addGroup(panel7Layout.createSequentialGroup()
+								.addGap(28, 28, 28)
+								.addComponent(jLabel48)
+								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+								.addComponent(jLabel49)
+								.addGap(35, 35, 35)
+								.addGroup(panel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+										.addComponent(inputSearchVarbit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+										.addComponent(jLabel50))
+								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+								.addGroup(panel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+										.addComponent(jScrollPane10)
+										.addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
+								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+								.addComponent(btnVarbitsStopStart, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+								.addContainerGap())
+		);
+
+		tabPane.addTab("Varbits", panel7);
+
+		chkDock.setSelected(true);
+		chkDock.setText("Dock to the TriBot window");
+		chkDock.addActionListener(evt -> doDock = chkDock.isSelected());
 
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
@@ -706,6 +763,17 @@ public class Dock extends JFrame {
 
 		pack();
 	}
+
+	public JList<String> listVarbitLog;
+	public JButton btnVarbitsStopStart;
+	public JTextField inputSearchVarbit;
+	public JTable tableVarbits;
+	private JScrollPane jScrollPane9;
+	private JScrollPane jScrollPane10;
+	private JLabel jLabel48;
+	private JLabel jLabel49;
+	private JLabel jLabel50;
+	private Panel panel7;
 
 	private JButton btnClear;
 	private JButton btnCopyPathFinding;
@@ -761,4 +829,5 @@ public class Dock extends JFrame {
 	public JTable tableNPCs;
 	public JTable tableObjects;
 	public JTable tableSettings;
+
 }

@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import org.tribot.api.General;
 import org.tribot.api2007.Game;
 
+import org.tribot.api2007.Login;
 import scripts.LANScriptTools.Tools.SettingsTool;
 
 /**
@@ -28,14 +29,19 @@ public class SettingsThread implements Runnable{
 
 	@Override
 	public void run() {
-		
+
+		DefaultTableModel model = (DefaultTableModel)tool.script.dock.tableSettings.getModel();
+
 		// Quit this thread ASAP when the scripttools thread stops.
 		while (!tool.script.quitting) {
 			
 			if (tool.doUpdate) {
-				
-				DefaultTableModel model = (DefaultTableModel)tool.script.dock.tableSettings.getModel();
 
+				General.sleep(50);
+
+				if (Login.getLoginState() != Login.STATE.INGAME)
+					continue;
+				
 				final int[] settings = Game.getSettingsArray();
 				
 				if (oldSettings == null) {
@@ -63,8 +69,6 @@ public class SettingsThread implements Runnable{
 			} else {
 				oldSettings = null;
 			}
-			
-			General.sleep(50);
 		}
 		
 	}
